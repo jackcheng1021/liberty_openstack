@@ -1,0 +1,31 @@
+#!/bin/bash
+export controller_user=root
+export controller_user_pass=000000
+export compute01_user=root
+export compute01_user_pass=000000
+export compute02_user=root
+export compute02_user_pass=000000
+export dns_ip=192.168.200.2
+export controller_ip=192.168.200.10
+export compute01_ip=192.168.200.11
+export compute02_ip=192.168.200.12
+export ntp_server=time1.aliyun.com
+export mysql_pass=000000
+export rabbit_user=rabbit
+export rabbit_pass=000000
+export mysql_keystone_user=keystone
+export mysql_keystone_pass=000000
+export keystone_user_admin=admin
+export keystone_user_admin_pass=000000
+export mysql_glance_user=glance
+export mysql_glance_pass=000000
+export glance_user_admin=glance
+export glance_user_admin_pass=000000
+export mysql_nova_user=nova
+export mysql_nova_pass=000000
+export nova_user_admin=nova
+export nova_user_admin_pass=00000
+export neutron_user_admin=neutron
+export neutron_user_admin_pass=000000
+export secret_pass=000000
+
