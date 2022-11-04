@@ -20,34 +20,34 @@ mysql -uroot -p"$mysql_pass"  -e "use neutron;grant all privileges on neutron.* 
 mysql -uroot -p"$mysql_pass"  -e "use neutron;grant all privileges on neutron.* to '$mysql_neutron_user'@'%' identified by '$mysql_neutron_pass';"
 
 echo "创建neutron管理员"
-openstack user create --domain default --password ${neutron_user_admin_pass} ${neutron_user_admin}
+openstack user create --domain default --password ${neutron_user_admin_pass} ${neutron_user_admin} &> /dev/null
 if [ $? -ne 0 ]; then
   echo "创建neutron管理员失败"
   exit
 fi
-openstack role add --project service --user ${neutron_user_admin} admin
+openstack role add --project service --user ${neutron_user_admin} admin &> /dev/null
 if [ $? -ne 0 ]; then
   echo "neutron用户分配为管理员失败"
   exit
 fi
 
 echo "创建用于身份认证的neutron服务"
-openstack service create --name neutron --description "OpenStack Networking" network
+openstack service create --name neutron --description "OpenStack Networking" network &> /dev/null
 if [ $? -ne 0 ]; then
   echo "创建 neutron service 失败"
   exit
 fi
-openstack endpoint create --region RegionOne network public http://controller:9696
+openstack endpoint create --region RegionOne network public http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
   echo "neutron service public endpoint 失败"
   exit
 fi
-openstack endpoint create --region RegionOne network internal http://controller:9696
+openstack endpoint create --region RegionOne network internal http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
   echo "neutron service internal endpoint 失败"
   exit
 fi
-openstack endpoint create --region RegionOne network admin http://controller:9696
+openstack endpoint create --region RegionOne network admin http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
   echo "neutron service admin endpoint 失败"
   exit
@@ -193,7 +193,7 @@ openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT admin_password %S
 ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 
 echo "同步数据库"
-su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron &> /dev/null
 n=$(mysql -u${mysql_neutron_user} -p${mysql_neutron_pass} -e "use neutron;show tables;" | wc -l)
 if [ $n -eq 0 ]; then
   echo "数据库同步失败，请检查配置"
@@ -204,29 +204,29 @@ echo "启动neutron服务"
 systemctl restart openstack-nova-api  #重启nova，使nova配置生效
 if [ $? -ne 0 ]; then
   echo "openstack-nova-api重启失败,检查配置"
-if
+fi
 #启动网络服务并配置他们开机自启动(对所有网络选项)
+systemctl restart neutron-server
 if [ $? -ne 0 ]; then
   echo "neutron-server 重启失败,检查配置"
   exit
 fi
-systemctl retart neutron-linuxbridge-agent
+systemctl restart neutron-linuxbridge-agent
 if [ $? -ne 0 ]; then
   echo "neutron-linuxbridge-agent 重启失败,检查配置"
   exit
 fi
-systemctl retart neutron-dhcp-agent
+systemctl restart neutron-dhcp-agent
 if [ $? -ne 0 ]; then
   echo "neutron-dhcp-agent 重启失败,检查配置"
   exit
 fi
-systemctl retart neutron-metadata-agent
+systemctl restart neutron-metadata-agent
 if [ $? -ne 0 ]; then
   echo "neutron-metadata-agent 重启失败,检查配置"
   exit
 fi
-systemctl enable neutron-server neutron-linuxbridge-agent neutron-dhcp-agent neutron-met
-adata-agent &> /dev/null
+systemctl enable neutron-server neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent &> /dev/null
 #对网络选项2-3层网络，同样也启用并启动layer-3服务：
 systemctl restart neutron-l3-agent
 if [ $? -ne 0 ]; then
