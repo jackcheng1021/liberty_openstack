@@ -4,7 +4,7 @@ echo "该脚本在controller节点执行"
 echo "nova controller 开始配置"
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 source /etc/keystone/admin-openrc.sh #组件的需要依赖身份验证
 
 echo "配置nova 数据库"

@@ -4,7 +4,7 @@ echo "该脚本在compute节点运行"
 echo "配置 liberty-nova-compute"
 sleep 5
 
-source liberty-openrc.sh #加载环境变量
+source liberty-openrc #加载环境变量
 
 echo "安装软件"
 rpm -q openstack-nova-compute &> /dev/null

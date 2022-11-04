@@ -41,11 +41,12 @@ do
   fi
   
   if [ $key -eq 1 ]; then
-    source liberty-env-config.sh
+    ln -s liberty-env-config.sh /usr/local/bin/liberty-env-config
+    liberty-env-config
     liberty-pre-controller
     
     spawn ssh -p 22 $compute01_user@$compute01_ip
-    expect \"Password:\" 
+    expect \"Password:\"
     send \"${compute01_user_pass}\r\"
     expect \"${compute01_user}@*\"
     send \"liberty-pre-compute\r\"
@@ -54,7 +55,7 @@ do
     expect eof
 
     spawn ssh -p 22 $compute02_user@$compute02_ip
-    expect \"Password:\" 
+    expect \"Password:\"
     send \"${compute02_user_pass}\r\"
     expect \"${compute02_user}@*\"
     send \"liberty-pre-compute\r\"
@@ -66,12 +67,32 @@ do
     liberty-keystone-controller
     liberty-glance-controller
     liberty-nova-controller
+    
+    spawn ssh -p 22 $compute01_user@$compute01_ip
+    expect \"Password:\" 
+    send \"${compute01_user_pass}\r\"
+    expect \"${compute01_user}@*\"
+    send \"liberty-nova-compute ${compute01_ip}\r\"
+    expect \"${compute01_user}@*\"
+    send \"exit\r\"
+    expect eof
+
+    spawn ssh -p 22 $compute02_user@$compute02_ip
+    expect \"Password:\" 
+    send \"${compute02_user_pass}\r\"
+    expect \"${compute02_user}@*\"
+    send \"liberty-nova-compute ${compute02_ip}\r\"
+    expect \"${compute02_user}@*\"
+    send \"exit\r\"
+    expect eof
+
+    liberty-neutron-controller
 
     spawn ssh -p 22 $compute01_user@$compute01_ip
     expect \"Password:\"
     send \"${compute01_user_pass}\r\"
     expect \"${compute01_user}@*\"
-    send \"liberty-nova-compute\r\"
+    send \"liberty-neutron-compute ${compute01_ip}\r\"
     expect \"${compute01_user}@*\"
     send \"exit\r\"
     expect eof
@@ -80,7 +101,7 @@ do
     expect \"Password:\"
     send \"${compute02_user_pass}\r\"
     expect \"${compute02_user}@*\"
-    send \"liberty-nova-compute\r\"
+    send \"liberty-neutron-compute ${compute02_ip}\r\"
     expect \"${compute02_user}@*\"
     send \"exit\r\"
     expect eof

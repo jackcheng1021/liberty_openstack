@@ -4,7 +4,7 @@ echo "该脚本部署在controller节点"
 echo "glance安装配置脚本"
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 source /etc/keystone/admin-openrc.sh #加载管理员令牌
 
 echo "配置mysql glance数据库"

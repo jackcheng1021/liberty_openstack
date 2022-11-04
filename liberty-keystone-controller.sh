@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source liberty-openrc.sh
+source liberty-openrc
 
 echo "该脚本在controller节点执行"
 echo "开始安装并配置keystone"

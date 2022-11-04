@@ -4,7 +4,7 @@ echo "该脚本在compute节点运行"
 echo "liberty-neutron-compute setup"
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 
 echo "安装软件"
 yum -y install openstack-neutron openstack-neutron-linuxbridge ebtables ipset &> /dev/null

@@ -3,7 +3,7 @@
 echo "该脚本在controller节点执行"
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 
 echo "部署mysql数据库"
 rpm -q mariadb &> /dev/null

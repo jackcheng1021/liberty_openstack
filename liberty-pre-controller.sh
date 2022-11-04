@@ -6,7 +6,7 @@ echo "在controller节点执行"
 
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 
 echo "配置yum源"
 curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null

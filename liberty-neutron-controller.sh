@@ -4,7 +4,7 @@ echo "该脚本在controller节点运行"
 echo "liberty-neutron-controller 开始配置"
 sleep 5
 
-source liberty-openrc.sh
+source liberty-openrc
 source /etc/keystone/admin-openrc.sh
 
 echo "配置数据库 neutron"
