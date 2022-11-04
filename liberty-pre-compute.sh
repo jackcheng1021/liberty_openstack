@@ -56,6 +56,7 @@ service iptables save
 
 echo "禁用安全模块"
 sed -i 's#SELINUX=.*#SELINUX=disabled#g' /etc/selinux/config
+setenforce 0
 
 echo "设置DNS"
 len=$(cat /etc/resolv.conf | grep "^nameserver" | grep -v '^$' | wc -l) #-v 表示过滤掉
@@ -138,6 +139,4 @@ then
   exit
 fi
 
-echo "配置完成，重启"
-sleep 2
-reboot
+echo "配置完成"
