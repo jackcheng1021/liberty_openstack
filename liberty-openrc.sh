@@ -28,4 +28,7 @@ export nova_user_admin_pass=00000
 export neutron_user_admin=neutron
 export neutron_user_admin_pass=000000
 export secret_pass=000000
-
+export mysql_neutron_user=neutron
+export mysql_neutron_pass=000000
+export public_network_name=public
+export public_network_interface=ens34
