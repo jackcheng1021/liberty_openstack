@@ -32,3 +32,9 @@ export mysql_neutron_user=neutron
 export mysql_neutron_pass=000000
 export public_network_name=public
 export public_network_interface=ens34
+export mysql_cinder_user=cinder
+export mysql_cinder_pass=000000
+export cinder_user_admin=cinder
+export cinder_user_admin_pass=000000
+export cinder_disk_path=/dev/sdb
+
