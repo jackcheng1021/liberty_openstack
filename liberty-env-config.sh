@@ -1,8 +1,6 @@
 #!/bin/bash
 
-echo "在controller节点配置需要的环境变量"
-echo "请在需要输入密码处输入对应的主机密码"
-sleep 5
+echo "$(hostname): config liberty-env"
 
 source liberty-openrc.sh
 rpm -q expect &> /dev/null
@@ -15,6 +13,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "创建controller节点的脚本链接"
+
+chmod +x *.sh
 /usr/bin/expect << FLAGEOF
 set timeout 2
 spawn ssh $controller_user@$controller_ip   
@@ -29,6 +29,8 @@ expect "${controller_user}@*" {send "ln -s liberty-keystone-controller.sh /usr/l
 expect "${controller_user}@*" {send "ln -s liberty-glance-controller.sh /usr/local/bin/liberty-glance-controller\r"}
 expect "${controller_user}@*" {send "ln -s liberty-nova-controller.sh /usr/local/bin/liberty-nova-controller\r"}
 expect "${controller_user}@*" {send "ln -s liberty-neutron-controller.sh /usr/local/bin/liberty-neutron-controller\r"}
+expect "${controller_user}@*" {send "ln -s liberty-dashboard-controller.sh /usr/local/bin/liberty-dashboard-controller\r"}
+expect "${controller_user}@*" {send "ln -s liberty-cinder-controller.sh /usr/local/bin/liberty-cinder-controller\r"}
 expect "${controller_user}@*" {send "exit\r"}
 expect eof 
 FLAGEOF
@@ -59,6 +61,7 @@ expect "${compute01_user}@*" {send "ln -s liberty-openrc.sh /usr/local/bin/liber
 expect "${compute01_user}@*" {send "ln -s liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
 expect "${compute01_user}@*" {send "ln -s liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
 expect "${compute01_user}@*" {send "ln -s liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
+expect "${compute01_user}@*" {send "ln -s liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
 expect "${compute01_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF
@@ -89,8 +92,9 @@ expect "${compute02_user}@*" {send "ln -s liberty-openrc.sh /usr/local/bin/liber
 expect "${compute02_user}@*" {send "ln -s liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
 expect "${compute02_user}@*" {send "ln -s liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
 expect "${compute02_user}@*" {send "ln -s liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
+expect "${compute02_user}@*" {send "ln -s liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
 expect "${compute02_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF
 
-echo "环境设置完成"
+echo "$(hostname): config liberty env finish"
