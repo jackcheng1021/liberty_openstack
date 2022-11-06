@@ -18,7 +18,7 @@ reboot
 ## 2. Download liberty package 
 - url: https://pan.baidu.com/s/1ZkhNkJD4EC8y4pAvodEtDg 
 - code: kn34 
-- <font color='red'>down the package to the root directory of this project</font>
+- <font color='red'>upload the package to the root directory of this project</font>
 
 ## 3. Boot and deploy
 - step1: set parameter in liberty-openrc.sh
