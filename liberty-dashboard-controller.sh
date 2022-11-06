@@ -4,7 +4,7 @@ source liberty-openrc
 
 source /etc/keystone/admin-openrc.sh
 
-echo "setup dashboard"
+echo "$(hostname): setup liberty-dashboard-controller"
 
 echo "install dashboard"
 yum -y install openstack-dashboard &> /dev/null
@@ -39,10 +39,10 @@ sed -i "s#'enable_firewall': .*#'enable_firewall': False,#g" /etc/openstack-dash
 sed -i "s#'enable_vpn': .*#'enable_vpn': False,#g" /etc/openstack-dashboard/local_settings
 sed -i "s#'enable_fip_topology_check': .*#'enable_fip_topology_check': False,#g" /etc/openstack-dashboard/local_settings
 
-echo "restart service"
+echo "boot service"
 systemctl restart httpd
 if [ $? -ne 0 ]; then
-  echo "controller: error check dashboard parameter"
+  echo "dashboard local_settings exist error"
   exit
 else
   systemctl enable httpd &> /dev/null
@@ -50,7 +50,7 @@ fi
 
 systemctl restart memcached
 if [ $? -ne 0 ]; then
-  echo "controller: error check dashboard parameter"
+  echo "dashboard local_settings exist error"
   exit
 else
   systemctl enable memcached &> /dev/null
@@ -60,4 +60,4 @@ echo "pleae access http://${controller_ip}/dashboard"
 echo "domain: default"
 echo "user: ${keystone_user_admin}"
 echo "password" ${keystone_user_admin_pass}
-echo "setup dashboard finish"
+echo "$(hostname): setup liberty-dashboard-controller finish"

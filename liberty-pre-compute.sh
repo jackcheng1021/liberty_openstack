@@ -1,17 +1,13 @@
 #!/bin/bash
 
-echo "进行部署openstack的准备工作"
-
-echo "在compute节点执行"
-
-sleep 5
+echo "$(hostname): setup liberty-pre-compute"
 
 source liberty-openrc
 
-echo "配置yum源"
+echo "config yum repo"
 curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "yum源: CentOS-Base.repo 配置失败"
+  echo "yum: CentOS-Base.repo config error"
   exit
 fi
 if [ -f /etc/yum.repos.d/liberty.repo ]; then
@@ -28,37 +24,42 @@ E0F
 yum makecache &> /dev/null
 len=$(yum list | grep "^openstack" | wc -l)
 if [ ${len} -lt 137 ]; then
-  echo "liberty源配置有错"
+  echo "liberty repo error"
   exit
 fi
 
-echo "关闭防火墙"
+echo "close firewall"
 systemctl stop firewalld &> /dev/null
 systemctl disable firewalld &> /dev/null
 
-echo "关闭网络管理器"
+echo "close networkmanager"
 systemctl stop NetworkManager &> /dev/null
 systemctl disable NetworkManager &> /dev/null
 
-echo "清空访问规则"
+echo "clear rule"
 rpm -q iptables-services &> /dev/null
 if [ $? -ne 0 ];then
   yum -y install iptables-services &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "访问规则管理器安装失败"
+    echo "iptables-services installed error"
     exit
   fi
 fi
 systemctl restart iptables
-systemctl enable iptables
+systemctl enable iptables &> /dev/null
 iptables -F && iptables -F -t nat && iptables -F -t mangle && iptables -F -t raw
-service iptables save
+service iptables save &> /dev/null
 
-echo "禁用安全模块"
-sed -i 's#SELINUX=.*#SELINUX=disabled#g' /etc/selinux/config
-setenforce 0
+echo "disable selinux"
+#sed -i 's#SELINUX=.*#SELINUX=disabled#g' /etc/selinux/config
+#setenforce 0
+seStatus=$(sestatus | awk '{print $3}')
+if [ "${seStatus}" != "disabled" ]; then
+  echo "set SELINUX=disabled in /etc/selinux/config and reboot server"
+  exit
+fi
 
-echo "设置DNS"
+echo "config DNS"
 len=$(cat /etc/resolv.conf | grep "^nameserver" | grep -v '^$' | wc -l) #-v 表示过滤掉
 if [ ${len} -eq 0 ];then
     echo "nameserver ${dns_ip}" &>> /etc/resolv.conf
@@ -66,7 +67,7 @@ else
     sed -i 's#^nameserver .*#nameserver '${dns_ip}'#g' /etc/resolv.conf
 fi
 
-echo "设置主机映射"
+echo "config host map"
 len=$(cat /etc/hosts | grep 'controller$' | grep -v '^$' | wc -l)
 if [ $len -eq 0 ]; then
     #主机映射中没有controller这一行
@@ -95,38 +96,38 @@ else
     echo "${compute02_ip} compute02" &>> /etc/hosts
 fi
 
-echo "安装初始化软件包"
+echo "install application"
 yum -y install python-openstackclient &> /dev/null
 if [ $? -ne 0 ];then
-    echo "python-openstackclient 安装失败"
+    echo "python-openstackclient installed error"
     exit
 fi
 yum -y install python-openstackclient &> /dev/null
 if [ $? -ne 0 ];then
-    echo "python-openstackclient 安装失败"
+    echo "python-openstackclient installed error"
     exit
 fi
 yum -y install openstack-utils &> /dev/null
 if [ $? -ne 0 ];then
-    echo "openstack-utils 安装失败"
+    echo "openstack-utils installed error"
     exit 
 fi
 
-echo "部署时间同步"
+echo "deploy NTP"
 rpm -q chrony &> /dev/null
 if [ $? -ne 0 ]; then
-    echo "开始安装时间同步"
+    echo "install ntp"
     yum -y install chrony &> /dev/null
 fi
 
-echo "配置时间同步"
+echo "config NTP"
 
 #删除server配置
 sed -i 's#^.*.iburst$##g' /etc/chrony.conf
 echo "server ${ntp_server} iburst" >> /etc/chrony.conf
 
-systemctl restart chronyd 
-systemctl enable chronyd
+systemctl restart chronyd || (echo "config ntp error"; exit)
+systemctl enable chronyd &> /dev/null
 
 {
     chronyc sources -v | grep '\^\*'
@@ -135,8 +136,8 @@ wait
 
 if [ $? -ne 0 ]
 then
-  echo "请检查时间同步配置"
+  echo "sync time error"
   exit
 fi
 
-echo "配置完成"
+echo "$(hostname): setup liberty-pre-compute finish"

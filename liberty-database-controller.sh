@@ -1,33 +1,28 @@
 #!/bin/bash
 
-echo "该脚本在controller节点执行"
-sleep 5
+echo "$(hostname): setup liberty-database-controller"
 
 source liberty-openrc
 
-echo "部署mysql数据库"
+echo "deploy mariadb"
 rpm -q mariadb &> /dev/null
 if [ $? -ne 0 ]; then
-  #mariadb没有安装
-  yum -y install mariadb &> /dev/null
+  yum -y install mariadb &> /dev/null || (echo "mariadb installed error"; exit)
 fi
 
 rpm -q mariadb-server &> /dev/null
 if [ $? -ne 0 ]; then
-  #mariadb-server没有安装
-  yum -y install mariadb-server &> /dev/null
+  yum -y install mariadb-server &> /dev/null || (echo "mariadb-server installed error"; exit)
 fi
 
 rpm -q MySQL-python &> /dev/null
 if [ $? -ne 0 ]; then
-  #MYSQL-python没有安装
-  yum -y install MYSQL-python &> /dev/null
+  yum -y install MYSQL-python &> /dev/null || (echo "MYSQL-python installed error"; exit)
 fi
 
 rpm -q expect &> /dev/null
 if [ $? -ne 0 ]; then
-  #安装expect
-  yum -y install expect
+  yum -y install expect $> /dev/null || (echo "expect installed error"; exit)
 fi
 
 cp /usr/share/mariadb/my-medium.cnf /etc/my.cnf
@@ -41,7 +36,7 @@ openstack-config --set /etc/my.cnf mysqld init-connect 'SET NAMES utf8'
 openstack-config --set /etc/my.cnf mysqld character-set-server utf8
 openstack-config --set /etc/my.cnf mysqld max_connections 1000
 
-systemctl restart mariadb &> /dev/null
+systemctl restart mariadb &> /dev/null || (echo "service mariadb start error"; exit)
 systemctl enable mariadb &> /dev/null
 
 expect -c "
@@ -64,25 +59,26 @@ expect \"Reload privilege tables now?\"
 send \"y\r\"
 expect eof
 "
-echo "mysql 数据库配置完成"
+if [ $? -ne 0 ]; then
+  echo "mariadb init error"
+  exit
+fi
 
-echo "部署MongoDB 数据库"
+echo "deploy MongoDB"
 rpm -q mongodb-server &> /dev/null
 if [ $? -ne 0 ]; then
-  #mongodb-server 没安装
   yum -y install mongodb-server &> /dev/null
   if [ $? -ne 0 ];then
-    echo "安装 mongodb-server 失败"
+    echo "mongodb-server installed error"
     exit
   fi
 fi
 
 rpm -q mongodb &> /dev/null
 if [ $? -ne 0 ]; then
-  #mongodb 没安装
   yum -y install mongodb &> /dev/null
   if [ $? -ne 0 ];then
-    echo "安装 mongodb 失败"
+    echo "mongodb installed error"
     exit
   fi
 fi
@@ -90,16 +86,15 @@ fi
 sed -i 's#^bind_ip = .*#\#bind_ip = 127.0.0.1#g' /etc/mongod.conf
 sed -i 's#^\#smallfiles = .*#smallfiles = true#g' /etc/mongod.conf
 
-systemctl restart mongod 
+systemctl restart mongod || (echo "mongodb boot error"; exit)
 systemctl enable mongod &> /dev/null
-echo "MongoDB 配置完成"
 
-echo "部署 RabbitMQ 消息队列"
+echo "deploy RabbitMQ"
 rpm -q rabbitmq-server &> /dev/null
 if [ $? -ne 0 ]; then
   yum -y install rabbitmq-server &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "rabbitmq 安装失败"
+    echo "rabbitmq installed error"
     exit
   fi
 fi
@@ -112,6 +107,5 @@ if [ $? -ne 0 ]; then
   rabbitmqctl add_user $rabbit_user $rabbit_pass
 fi
 rabbitmqctl set_permissions $rabbit_user ".*" ".*" ".*"
-echo "rabbitmq 配置完成"
 
-echo "数据库配置完成"
+echo "$(hostname): setup liberty-database-controller finish"

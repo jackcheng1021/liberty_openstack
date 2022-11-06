@@ -1,35 +1,33 @@
 #!/bin/bash
 
-echo "该脚本在compute节点运行"
-echo "liberty-neutron-compute setup"
-sleep 5
+echo "$(hostname): setup liberty-neutron-compute"
 
 source liberty-openrc
 
-echo "安装软件"
+echo "install application"
 yum -y install openstack-neutron openstack-neutron-linuxbridge ebtables ipset &> /dev/null
 rpm -q openstack-neutron &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "openstack-neutron 安装失败"
+  echo "openstack-neutron installed error"
   exit
 fi
 rpm -q openstack-neutron-linuxbridge &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "openstack-neutron-linuxbridge 安装失败"
+  echo "openstack-neutron-linuxbridge installed error"
   exit
 fi
 rpm -q ebtables &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "ebtables 安装失败"
+  echo "ebtables installed error"
   exit
 fi
 rpm -q ipset &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "ipset 安装失败"
+  echo "ipset installed error"
   exit
 fi
 
-echo "配置参数"
+echo "config parameter"
 openstack-config --set /etc/neutron/neutron.conf DEFAULT rpc_backend rabbit   
   #配置RabbitMQ消息队列访问
 openstack-config --set /etc/neutron/neutron.conf DEFAULT auth_strategy keystone
@@ -53,25 +51,26 @@ openstack-config --set /etc/neutron/neutron.conf oslo_messaging_rabbit rabbit_pa
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini linux_bridge physical_interface_mappings ${public_network_name}:${public_network_interface}  
   #映射公共虚拟网络到公共物理网络接口
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan enable_vxlan True
-openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan local_ip $1
+ip=$(grep "$(hostname)" /etc/hosts | awk '{print $1}')
+openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan local_ip ${ip}
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini vxlan l2_population True
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini agent prevent_arp_spoofing True 
   #启用ARP欺骗防护
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup enable_security_group True
 openstack-config --set /etc/neutron/plugins/ml2/linuxbridge_agent.ini securitygroup firewall_driver neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 
-echo "启动服务"
+echo "boot service"
 systemctl restart openstack-nova-compute
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-compute 重启失败，检查配置"
+  echo "service openstack-nova-compute restart error, check parameter"
   exit
 fi
 systemctl restart neutron-linuxbridge-agent
 if [ $? -ne 0 ]; then
-  echo "neutron-linuxbridge-agent 重启失败，检查配置"
+  echo "service neutron-linuxbridge-agent restart error, check parameter"
   exit
 else
   systemctl enable neutron-linuxbridge-agent &> /dev/null
 fi
 
-echo "liberty-neutron-compute setup finish"
+echo "$(hostname): setup liberty-neutron-compute finish"

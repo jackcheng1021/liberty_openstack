@@ -7,12 +7,12 @@ rpm -q expect &> /dev/null
 if [ $? -ne 0 ]; then
   yum -y install expect &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "请检查网络"
+    echo "network connect error"
     exit
   fi
 fi
 
-echo "创建controller节点的脚本链接"
+echo "prepare scripts to controller"
 
 chmod +x *.sh
 /usr/bin/expect << FLAGEOF
@@ -35,7 +35,7 @@ expect "${controller_user}@*" {send "exit\r"}
 expect eof 
 FLAGEOF
 
-echo "创建compute01节点的脚本链接"
+echo "prepare scripts to compute01"
 libery_path=$(pwd)
 dir_name=`pwd | awk -F "/" '{print $NF}'`
 
@@ -66,7 +66,7 @@ expect "${compute01_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF
 
-echo "创建compute02节点的脚本链接"
+echo "prepare scripts to compute02"
 libery_path=$(pwd)
 dir_name=`pwd | awk -F "/" '{print $NF}'`
 

@@ -1,16 +1,13 @@
 #!/bin/bash
 
-echo "该脚本在controller节点运行"
-echo "liberty-neutron-controller 开始配置"
-sleep 5
+echo "$(hostname): setup liberty-neutron-controller"
 
 source liberty-openrc
 source /etc/keystone/admin-openrc.sh
 
-echo "配置数据库 neutron"
+echo "config neutron database"
 mysql -uroot -p"$mysql_pass" -e "show databases;" | grep "neutron" &> /dev/null
 if [ $? -eq 0 ]; then
-  #系统中存在nova库
   mysql -uroot -p"$mysql_pass" -e "drop database neutron;"
 fi
 mysql -uroot -p"$mysql_pass" -e "create database neutron;"
@@ -19,80 +16,80 @@ mysql -uroot -p"$mysql_pass"  -e "use neutron;grant all privileges on neutron.* 
 
 mysql -uroot -p"$mysql_pass"  -e "use neutron;grant all privileges on neutron.* to '$mysql_neutron_user'@'%' identified by '$mysql_neutron_pass';"
 
-echo "创建neutron管理员"
+echo "create neutron admin"
 openstack user create --domain default --password ${neutron_user_admin_pass} ${neutron_user_admin} &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "创建neutron管理员失败"
+  echo "create neutron user admin error"
   exit
 fi
 openstack role add --project service --user ${neutron_user_admin} admin &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "neutron用户分配为管理员失败"
+  echo "neutron user admin bind role error"
   exit
 fi
 
-echo "创建用于身份认证的neutron服务"
+echo "create neutron service"
 openstack service create --name neutron --description "OpenStack Networking" network &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "创建 neutron service 失败"
+  echo "service neutron created error"
   exit
 fi
 openstack endpoint create --region RegionOne network public http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "neutron service public endpoint 失败"
+  echo "service neutron add endpoint public error"
   exit
 fi
 openstack endpoint create --region RegionOne network internal http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "neutron service internal endpoint 失败"
+  echo "service neutron add endpoint internal error"
   exit
 fi
 openstack endpoint create --region RegionOne network admin http://controller:9696 &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "neutron service admin endpoint 失败"
+  echo "service neutron add endpoint admin error"
   exit
 fi
 
-echo "安装软件"
+echo "install application"
 yum -y install openstack-neutron openstack-neutron-ml2 openstack-neutron-linuxbridge python-neutronclient ebtables ipset &> /dev/null
 
 rpm -q openstack-neutron &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "openstack-neutron 安装失败"
+  echo "openstack-neutron installed error"
   exit
 fi
 
 rpm -q openstack-neutron-ml2 &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "openstack-neutron-ml2 安装失败"
+  echo "openstack-neutron-ml2 installed error"
   exit
 fi
 
 rpm -q openstack-neutron-linuxbridge &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "openstack-neutron-linuxbridge 安装失败"
+  echo "openstack-neutron-linuxbridge installed error"
   exit
 fi
 
 rpm -q python-neutronclient &> /dev/null
 if [ $? -ne 0 ]; then 
-  echo "python-neutronclient 安装失败"
+  echo "python-neutronclient installed error"
   exit
 fi
 
 rpm -q ebtables &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "ebtables 安装失败"
+  echo "ebtables installed error"
   exit
 fi
 
 rpm -q ipset &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "ipset 安装失败"
+  echo "ipset installed error"
   exit
 fi
 
-echo "配置参数"
+echo "config parameter"
 openstack-config --set /etc/neutron/neutron.conf DEFAULT core_plugin ml2
   #启用Layer 2 (ML2)插件模块，路由服务和重叠的IP地址
 openstack-config --set /etc/neutron/neutron.conf DEFAULT service_plugins router
@@ -192,47 +189,48 @@ openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT admin_user %SERVI
 openstack-config --set /etc/neutron/metadata_agent.ini DEFAULT admin_password %SERVICE_PASSWORD%
 ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 
-echo "同步数据库"
+echo "sync neutron database"
 su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron &> /dev/null
 n=$(mysql -u${mysql_neutron_user} -p${mysql_neutron_pass} -e "use neutron;show tables;" | wc -l)
 if [ $n -eq 0 ]; then
-  echo "数据库同步失败，请检查配置"
+  echo "sync neutron database error"
   exit
 fi
 
-echo "启动neutron服务"
+echo "boot service"
 systemctl restart openstack-nova-api  #重启nova，使nova配置生效
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-api重启失败,检查配置"
+  echo "service openstack-nova-api restart error"
+  exit
 fi
 #启动网络服务并配置他们开机自启动(对所有网络选项)
 systemctl restart neutron-server
 if [ $? -ne 0 ]; then
-  echo "neutron-server 重启失败,检查配置"
+  echo "service neutron-server restart error"
   exit
 fi
 systemctl restart neutron-linuxbridge-agent
 if [ $? -ne 0 ]; then
-  echo "neutron-linuxbridge-agent 重启失败,检查配置"
+  echo "service neutron-linuxbridge-agent restart error"
   exit
 fi
 systemctl restart neutron-dhcp-agent
 if [ $? -ne 0 ]; then
-  echo "neutron-dhcp-agent 重启失败,检查配置"
+  echo "service neutron-dhcp-agent restart error"
   exit
 fi
 systemctl restart neutron-metadata-agent
 if [ $? -ne 0 ]; then
-  echo "neutron-metadata-agent 重启失败,检查配置"
+  echo "service neutron-metadata-agent restart error"
   exit
 fi
 systemctl enable neutron-server neutron-linuxbridge-agent neutron-dhcp-agent neutron-metadata-agent &> /dev/null
 #对网络选项2-3层网络，同样也启用并启动layer-3服务：
 systemctl restart neutron-l3-agent
 if [ $? -ne 0 ]; then
-  echo "neutron-l3-agent 重启失败,检查配置"
+  echo "service neutron-l3-agent restart error"
   exit
 fi
 systemctl enable neutron-l3-agent &>/dev/null
 
-echo "liberty-neutron-controller setup finish"
+echo "$(hostname): setup liberty-neutron-controller finish"

@@ -1,17 +1,15 @@
 #!/bin/bash
 
-echo "该脚本在compute节点运行"
-echo "配置 liberty-nova-compute"
-sleep 5
+echo "$(hostname): setup liberty-nova-compute"
 
 source liberty-openrc #加载环境变量
 
-echo "安装软件"
+echo "install application"
 rpm -q openstack-nova-compute &> /dev/null
 if [ $? -ne 0 ]; then
   yum -y install openstack-nova-compute &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "openstack-nova-compute 安装失败"
+    echo "openstack-nova-compute installed error"
     exit
   fi
 fi
@@ -20,17 +18,18 @@ rpm -q sysfsutils &> /dev/null
 if [ $? -ne 0 ]; then
   yum -y install sysfsutils &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "sysfsutils 安装失败"
+    echo "sysfsutils installed error"
     exit
   fi
 fi
 
-echo "配置参数"
+echo "config parameter"
 openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit 
   #配置RabbitMQ消息队列
 openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
   #配置认证服务访问
-openstack-config --set /etc/nova/nova.conf DEFAULT my_ip $1 #Ip从脚本外传进
+ip=$(grep "$(hostname)" /etc/hosts | awk '{print $1}')
+openstack-config --set /etc/nova/nova.conf DEFAULT my_ip $ip
   #计算节点上的管理网络接口的IP地址
 openstack-config --set /etc/nova/nova.conf DEFAULT network_api_class nova.network.neutronv2.api.API
   #启用网络服务支持
@@ -76,21 +75,21 @@ openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_password
   #配置Rabbit访问信息
 openstack-config --set /etc/nova/nova.conf vnc enabled True
 openstack-config --set /etc/nova/nova.conf vnc vncserver_listen 0.0.0.0
-openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address $1
+openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address $ip
 openstack-config --set /etc/nova/nova.conf vnc novncproxy_base_url http://${controller_ip}:6080/vnc_auto.html
   #配置访问云主机的伪终端
 
-echo "启动服务"
+echo "boot service"
 systemctl restart libvirtd
 if [ $? -ne 0 ]; then
-  echo "libvirtd 启动失败"
+  echo "service libvirtd restart error"
   exit
 fi
 systemctl restart openstack-nova-compute
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-compute 启动失败"
+  echo "service openstack-nova-compute restart error"
   exit
 fi
 systemctl enable libvirtd openstack-nova-compute
 
-echo "liberty-nova-compute 配置完成"
+echo "$(hostname): setup liberty-nova-compute finish"

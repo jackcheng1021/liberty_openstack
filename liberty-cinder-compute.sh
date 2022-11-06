@@ -2,7 +2,7 @@
 
 source liberty-openrc
 
-echo "$(hostname): setup cinder-compute"
+echo "$(hostname): setup liberty-cinder-compute"
 
 echo "install application"
 yum -y install lvm2 &> /dev/null
@@ -72,9 +72,9 @@ openstack-config --set /etc/cinder/cinder.conf lvm iscsi_protocol iscsi
   #设置使用磁盘协议scsi
 openstack-config --set /etc/cinder/cinder.conf lvm iscsi_helper lioadm
 
-echo "restart service"
+echo "boot service"
 systemctl restart openstack-cinder-volume || (echo "service openstack-cinder-volume restart error"; exit)
 systemctl restart target || (echo "service target restart error"; exit)
 systemctl enable openstack-cinder-volume target &> /dev/null
 
-echo "$(hostname): setup cinder-compute finish"
+echo "$(hostname): setup liberty-cinder-compute finish"

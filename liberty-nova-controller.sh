@@ -1,13 +1,11 @@
 #!/bin/bash
 
-echo "该脚本在controller节点执行"
-echo "nova controller 开始配置"
-sleep 5
+echo "$(hostname): setup liberty-nova-controller"
 
 source liberty-openrc
 source /etc/keystone/admin-openrc.sh #组件的需要依赖身份验证
 
-echo "配置nova 数据库"
+echo "config nova database"
 mysql -uroot -p"$mysql_pass" -e "show databases;" | grep "nova" &> /dev/null
 if [ $? -eq 0 ]; then
   #系统中存在nova库
@@ -19,48 +17,48 @@ mysql -uroot -p"$mysql_pass"  -e "use nova;grant all privileges on nova.* to '$m
 
 mysql -uroot -p"$mysql_pass"  -e "use nova;grant all privileges on nova.* to '$mysql_nova_user'@'%' identified by '$mysql_nova_pass';"
 
-echo "配置nova服务"
+echo "create nova service"
 openstack service create --name nova --description "OpenStack Compute" compute &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "nova 服务创建失败"
+  echo "service nova created error"
   exit
 fi
 openstack endpoint create --region RegionOne compute public http://controller:8774/v2/%\(tenant_id\)s &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "nova 服务 public 入口创建失败失败"
+  echo "service nova add endpoint public error"
   exit
 fi
 openstack endpoint create --region RegionOne compute internal http://controller:8774/v2/%\(tenant_id\)s &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "nova 服务 internal 入口创建失败失败"
+  echo "service nova add endpoint internal error"
   exit
 fi
 openstack endpoint create --region RegionOne compute admin http://controller:8774/v2/%\(tenant_id\)s &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "nova 服务 admin 入口创建失败失败"
+  echo "service nova add endpoint admin error"
   exit
 fi
 
-echo "创建用户"
+echo "create nova admin"
 openstack user create --domain default --password $nova_user_admin_pass  $nova_user_admin &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "创建用户失败"
+  echo "nova user admin create error"
   exit
 fi
 openstack role add --project service --user $nova_user_admin admin
 if [ $? -ne 0 ]; then
-  echo "绑定角色失败"
+  echo "nova user admin bind role error"
   exit
 fi
 
-echo "安装nova组件"
+echo "install application"
 yum -y install openstack-nova-api openstack-nova-cert openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler python-novaclient &> /dev/null
 if [ $? -ne 0 ]; then
-  echo "nova组件安装失败"
+  echo "nova application installed error"
   exit
 fi
 
-echo "设置nova参数"
+echo "config parameter"
 openstack-config --set /etc/nova/nova.conf DEFAULT rpc_backend rabbit 
   #配置RabbitMQ消息队列访问
 openstack-config --set /etc/nova/nova.conf DEFAULT auth_strategy keystone
@@ -114,46 +112,46 @@ openstack-config --set /etc/nova/nova.conf oslo_messaging_rabbit rabbit_password
 openstack-config --set /etc/nova/nova.conf vnc vncserver_listen ${controller_ip}
 openstack-config --set /etc/nova/nova.conf vnc vncserver_proxyclient_address ${controller_ip}
 
-echo "同步数nova元数据库"
-su -s /bin/sh -c "nova-manage db sync" nova
+echo "sync nova database"
+su -s /bin/sh -c "nova-manage db sync" nova &> /dev/null
 n=$(mysql -u${mysql_nova_user} -p${mysql_nova_pass} -e "use nova;show tables;" | wc -l)
 if [ $n -eq 0 ]; then
-  echo "数据库同步失败，请检查配置"
+  echo "sync nova database error"
   exit
 fi
 
-echo "启动nova服务"
+echo "boot service"
 systemctl restart openstack-nova-api
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-api 启动失败，请检查配置"
+  echo "service openstack-nova-api restart error"
   exit
 fi
 systemctl restart openstack-nova-cert
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-cert 启动失败，请检查配置"
+  echo "service openstack-nova-cert restart error"
   exit
 fi
 systemctl restart openstack-nova-consoleauth
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-consoleauth 启动失败，请检查配置"
+  echo "service openstack-nova-consoleauth restart error"
   exit
 fi
 systemctl restart openstack-nova-scheduler 
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-scheduler 启动失败，请检查配置"
+  echo "service openstack-nova-scheduler restart error"
   exit
 fi
 systemctl restart openstack-nova-conductor
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-conductor 启动失败，请检查配置"
+  echo "service openstack-nova-conductor restart error"
   exit
 fi
 systemctl restart openstack-nova-novncproxy
 if [ $? -ne 0 ]; then
-  echo "openstack-nova-conductor 启动失败，请检查配置"
+  echo "service openstack-nova-conductor restart error"
   exit
 fi
 
 systemctl enable openstack-nova-api openstack-nova-cert openstack-nova-consoleauth openstack-nova-scheduler openstack-nova-conductor openstack-nova-novncproxy &> /dev/null
 
-echo "nova controller 配置完成"
+echo "$(hostname): setup liberty-nova-controller finish"

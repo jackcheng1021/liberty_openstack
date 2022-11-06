@@ -20,7 +20,7 @@ do
   read -p "pleae input key: " key
   if [ $key -eq 10 ]; then
     echo "welcome to use again，bye"
-    exit
+    break
   fi 
   if [ $key -eq 11 ]; then
     clear
@@ -41,7 +41,7 @@ do
   fi
   
   if [ $key -eq 1 ]; then
-    echo "start on key install liberty-openstack"
+    echo "start one key install liberty-openstack"
     ln -s liberty-env-config.sh /usr/local/bin/liberty-env-config
     liberty-env-config
 
@@ -76,7 +76,7 @@ do
     expect \"Password:\" 
     send \"${compute01_user_pass}\r\"
     expect \"${compute01_user}@*\"
-    send \"liberty-nova-compute ${compute01_ip}\r\"
+    send \"liberty-nova-compute\r\"
     expect \"${compute01_user}@*\"
     send \"exit\r\"
     expect eof
@@ -85,7 +85,7 @@ do
     expect \"Password:\" 
     send \"${compute02_user_pass}\r\"
     expect \"${compute02_user}@*\"
-    send \"liberty-nova-compute ${compute02_ip}\r\"
+    send \"liberty-nova-compute\r\"
     expect \"${compute02_user}@*\"
     send \"exit\r\"
     expect eof
@@ -96,7 +96,7 @@ do
     expect \"Password:\"
     send \"${compute01_user_pass}\r\"
     expect \"${compute01_user}@*\"
-    send \"liberty-neutron-compute ${compute01_ip}\r\"
+    send \"liberty-neutron-compute\r\"
     expect \"${compute01_user}@*\"
     send \"exit\r\"
     expect eof
@@ -105,7 +105,7 @@ do
     expect \"Password:\"
     send \"${compute02_user_pass}\r\"
     expect \"${compute02_user}@*\"
-    send \"liberty-neutron-compute ${compute02_ip}\r\"
+    send \"liberty-neutron-compute\r\"
     expect \"${compute02_user}@*\"
     send \"exit\r\"
     expect eof

@@ -3,7 +3,7 @@
 source liberty-openrc
 source /etc/keystone/admin-openrc.sh
 
-echo "setup cinder-controller"
+echo "$(hostname): setup liberty-cinder-controller"
 
 echo "config database cinder"
 mysql -uroot -p"$mysql_pass" -e "show databases;" | grep "cinder" &> /dev/null
@@ -72,7 +72,7 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
-echo "install cinder"
+echo "install application"
 yum -y install openstack-cinder &> /dev/null
 if [ $? -ne 0 ]; then
   echo "openstack-cinder installed error"
@@ -137,4 +137,4 @@ if [ $? -ne 0 ]; then
 fi
 systemctl enable openstack-cinder-api openstack-cinder-scheduler &> /dev/null
 
-echo "setup cinder-controller finish"
+echo "$(hostname): setup liberty-cinder-controller finish"
