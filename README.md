@@ -36,8 +36,8 @@ reboot
 [root@controller liberty_openstack]# chmod +x *.sh
 [root@controller liberty_openstack]# ./liberty-env-config.sh
 [root@controller liberty_openstack]# liberty-pre-controller
-liberty-pre-compute
-liberty-pre-compute
+[root@compute01 ~]# liberty-pre-compute
+[root@compute02 ~]# liberty-pre-compute
 [root@controller liberty_openstack]# liberty-database-controller
 [root@controller liberty_openstack]# liberty-keystone-controller
 [root@controller liberty_openstack]# liberty-glance-controller
