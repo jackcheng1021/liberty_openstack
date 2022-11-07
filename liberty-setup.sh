@@ -130,7 +130,14 @@ do
     expect \"${compute02_user}@*\"
     send \"exit\r\"
     expect eof
+
+    echo "create default tenant user"
+    liberty-tenant-create
+
+    echo "create default tenant nwtwork"
+    liberty-tenant-network-create
     
     echo "one key install liberty-openstack finish"
+    
   fi
 done

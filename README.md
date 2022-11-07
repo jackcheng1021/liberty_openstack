@@ -54,3 +54,12 @@ reboot
 ```
 
 ## 4. The visualization system for remote installation will be updated later
+
+## 5. Update Process
+- 2022.11.06
+  - repair: some bugs
+  - submit: "on key install system"
+- 2022.11.07
+  - submit: tenant-create script
+  - submit: tenant-network-create script
+  - submit: two scripts add  "one key install system"

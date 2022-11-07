@@ -31,8 +31,10 @@ expect "${controller_user}@*" {send "ln -s liberty-nova-controller.sh /usr/local
 expect "${controller_user}@*" {send "ln -s liberty-neutron-controller.sh /usr/local/bin/liberty-neutron-controller\r"}
 expect "${controller_user}@*" {send "ln -s liberty-dashboard-controller.sh /usr/local/bin/liberty-dashboard-controller\r"}
 expect "${controller_user}@*" {send "ln -s liberty-cinder-controller.sh /usr/local/bin/liberty-cinder-controller\r"}
+expect "${controller_user}@*" {send "ln -s liberty-tenant-create.sh /usr/local/bin/liberty-tenant-create\r"}
+expect "${controller_user}@*" {send "ln -s liberty-tenant-network-create.sh /usr/local/bin/liberty-tenant-network-create\r"}
 expect "${controller_user}@*" {send "exit\r"}
-expect eof 
+expect eof
 FLAGEOF
 
 echo "prepare scripts to compute01"

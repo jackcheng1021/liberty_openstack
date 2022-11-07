@@ -9,6 +9,8 @@ export dns_ip=192.168.200.2
 export controller_ip=192.168.200.10
 export compute01_ip=192.168.200.11
 export compute02_ip=192.168.200.12
+export public_network_gateway=192.168.200.2
+export public_network_cidr=192.168.200.0/24
 export ntp_server=time1.aliyun.com
 export mysql_pass=000000
 export rabbit_user=rabbit
@@ -37,4 +39,8 @@ export mysql_cinder_pass=000000
 export cinder_user_admin=cinder
 export cinder_user_admin_pass=000000
 export cinder_disk_path=/dev/sdb
+
+export tenant_project=demo
+export tenant_project_user=demo
+export tenant_project_user_pass=000000
 
