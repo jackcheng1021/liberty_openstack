@@ -130,10 +130,18 @@ fi
 echo "check result"
 echo "export OS_IMAGE_API_VERSION=2" | tee -a /etc/keystone/admin-openrc.sh
 source /etc/keystone/admin-openrc.sh
+{
+  glance image-create --name "centos7" --file centos7.qcow2 --disk-format qcow2  --container-format bare --visibility public &> /dev/null
+}&
+wait
+if [ $? -ne 0 ]; then
+  echo "glance image upload error"
+  exit
+fi
+
 glance image-list &> /dev/null #确认镜像的上传并验证属性
 if [ $? -ne 0 ]; then
   echo "glance setup error"
   exit
 fi
 echo "$(hostname): setup liberty-glance-controller finish"
-

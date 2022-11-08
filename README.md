@@ -63,3 +63,6 @@ reboot
   - submit: tenant-create script
   - submit: tenant-network-create script
   - submit: two scripts add  "one key install system"
+- 2022.11.08
+  - submit: tenant-instance-create script，support use  default or custom create tenant-instance
+  - submit: repair liberty-setup script, liberty-tenant-instance-create add liberty-setup script

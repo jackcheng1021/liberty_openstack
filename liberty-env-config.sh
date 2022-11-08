@@ -33,6 +33,7 @@ expect "${controller_user}@*" {send "ln -s liberty-dashboard-controller.sh /usr/
 expect "${controller_user}@*" {send "ln -s liberty-cinder-controller.sh /usr/local/bin/liberty-cinder-controller\r"}
 expect "${controller_user}@*" {send "ln -s liberty-tenant-create.sh /usr/local/bin/liberty-tenant-create\r"}
 expect "${controller_user}@*" {send "ln -s liberty-tenant-network-create.sh /usr/local/bin/liberty-tenant-network-create\r"}
+ecpect "${controller_user}@*" {send "ln -s liberty-tenant-instance-create.sh /usr/local/bin/liberty-tenant-instance-create\r"}
 expect "${controller_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF

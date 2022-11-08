@@ -134,8 +134,11 @@ do
     echo "create default tenant user"
     liberty-tenant-create
 
-    echo "create default tenant nwtwork"
+    echo "create default tenant network"
     liberty-tenant-network-create
+
+    echo "create default tenant instance"
+    liberty-tenant-instance-create
     
     echo "one key install liberty-openstack finish"
     
