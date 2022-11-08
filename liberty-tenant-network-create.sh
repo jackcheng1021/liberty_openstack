@@ -82,10 +82,10 @@ else
 
   timestamp=$(echo $[$(date +%s%N)/1000000])
   tenant=$1
-  tenant_net=$2
-  tenant_subnet="${tenant}_${tenant_net}_${timestamp}"
-  tenant_net_cidr=$3
-  tenant_net_gateway=$4
+  tenant_net=$1
+  tenant_subnet="${tenant}_sub_${timestamp}"
+  tenant_net_cidr=$2
+  tenant_net_gateway=$3
   
   neutron net-show ${tenant_net} &> /dev/null
   if [ $? -ne 0 ]; then #租户网络不存在

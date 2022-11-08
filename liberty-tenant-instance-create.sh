@@ -80,7 +80,7 @@ elif [ $# -eq 1 ]; then #默认租户创建新实例  $1 instanceName
     floatingIp=$(neutron floatingip-create wan | grep "floating_ip_address" | awk '{print $4}')
     nova floating-ip-associate  ${floatingIp}
   }&
-  
+  wait
   if [ $? -ne 0 ]; then
     echo "bind floating ip error"
   fi
@@ -88,8 +88,48 @@ elif [ $# -eq 1 ]; then #默认租户创建新实例  $1 instanceName
   echo "instance list"
   nova list
 
-else
+elif [ $# -eq 2 ]; then
 
+  tenant=$1 #租户名
+  instanceName=$2 #实例名
+  echo "custom tenant: ${tenant} create custom instance: ${instanceName}"
+  source /etc/keystone/${tenant}-openrc.sh || (echo "tenant: ${tenant} not exist, error"; exit)
+  echo "upload image"
+  {
+    nova image-list | grep "centos7" &> /dev/null
+  }&
+  wait
+  if [ $? -ne 0 ]; then
+    echo "centos7 image not exist, error"
+    exit
+  fi
+
+  netId=$(neutron net-list | grep "${OS_TENANT_NAME}" | awk '{print $2}')
+
+  echo "boot instance"
+  {
+    instanceId=${RANDOM}
+    nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default ${instanceName}-${instanceId} &> /dev/null
+  }&
+  wait
+  if [ $? -ne 0 ]; then
+    echo "instance boot error"
+  fi
+
+  echo "bind floating ip"
+  {
+    floatingIp=$(neutron floatingip-create wan | grep "floating_ip_address" | awk '{print $4}')
+    nova floating-ip-associate  ${floatingIp}
+  }&
+  wait
+  if [ $? -ne 0 ]; then
+    echo "bind floating ip error"
+  fi
+
+  echo "instance list"
+  nova list
+
+else
   echo "script parameters error"
   exit
 fi
