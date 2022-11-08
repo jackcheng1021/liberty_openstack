@@ -88,6 +88,10 @@ elif [ $# -eq 2 ]; then #默认租户创建新实例  $1 instanceName $2 externa
   echo "instance list"
   nova list
 
+else
+
+  echo "script parameters error"
+  exit
 fi
 
 echo "run liberty-tenant-instance-create finish"
