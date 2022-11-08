@@ -2,7 +2,7 @@
 
 echo "$(hostname): setup liberty-neutron-compute"
 
-source liberty-openrc
+source liberty-openrc #加载环境变量
 
 echo "install application"
 yum -y install openstack-neutron openstack-neutron-linuxbridge ebtables ipset &> /dev/null

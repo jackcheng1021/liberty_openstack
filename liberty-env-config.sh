@@ -22,18 +22,18 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "$controller_user_pass\r"}
 }
-expect "${controller_user}@*" {send "ln -s liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
-expect "${controller_user}@*" {send "ln -s liberty-pre-controller.sh /usr/local/bin/liberty-pre-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-database-controller.sh /usr/local/bin/liberty-database-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-keystone-controller.sh /usr/local/bin/liberty-keystone-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-glance-controller.sh /usr/local/bin/liberty-glance-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-nova-controller.sh /usr/local/bin/liberty-nova-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-neutron-controller.sh /usr/local/bin/liberty-neutron-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-dashboard-controller.sh /usr/local/bin/liberty-dashboard-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-cinder-controller.sh /usr/local/bin/liberty-cinder-controller\r"}
-expect "${controller_user}@*" {send "ln -s liberty-tenant-create.sh /usr/local/bin/liberty-tenant-create\r"}
-expect "${controller_user}@*" {send "ln -s liberty-tenant-network-create.sh /usr/local/bin/liberty-tenant-network-create\r"}
-ecpect "${controller_user}@*" {send "ln -s liberty-tenant-instance-create.sh /usr/local/bin/liberty-tenant-instance-create\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-pre-controller.sh /usr/local/bin/liberty-pre-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-database-controller.sh /usr/local/bin/liberty-database-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-keystone-controller.sh /usr/local/bin/liberty-keystone-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-glance-controller.sh /usr/local/bin/liberty-glance-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-nova-controller.sh /usr/local/bin/liberty-nova-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-neutron-controller.sh /usr/local/bin/liberty-neutron-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-dashboard-controller.sh /usr/local/bin/liberty-dashboard-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-cinder-controller.sh /usr/local/bin/liberty-cinder-controller\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-tenant-create.sh /usr/local/bin/liberty-tenant-create\r"}
+expect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-tenant-network-create.sh /usr/local/bin/liberty-tenant-network-create\r"}
+ecpect "${controller_user}@*" {send "ln -s /root/liberty_openstack/liberty-tenant-instance-create.sh /usr/local/bin/liberty-tenant-instance-create\r"}
 expect "${controller_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF
@@ -60,11 +60,11 @@ expect {
         "password:" {send "$compute01_user_pass\r"}
 }
 expect "${compute01_user}@*" {send "cd /root/\r"}
-expect "${compute01_user}@*" {send "ln -s liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
-expect "${compute01_user}@*" {send "ln -s liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
-expect "${compute01_user}@*" {send "ln -s liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
-expect "${compute01_user}@*" {send "ln -s liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
-expect "${compute01_user}@*" {send "ln -s liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
+expect "${compute01_user}@*" {send "ln -s /root/liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
+expect "${compute01_user}@*" {send "ln -s /root/liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
+expect "${compute01_user}@*" {send "ln -s /root/liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
+expect "${compute01_user}@*" {send "ln -s /root/liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
+expect "${compute01_user}@*" {send "ln -s /root/liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
 expect "${compute01_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF
@@ -91,11 +91,11 @@ expect {
         "password:" {send "$compute02_user_pass\r"}
 }
 expect "${compute02_user}@*" {send "cd /root/\r"}
-expect "${compute02_user}@*" {send "ln -s liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
-expect "${compute02_user}@*" {send "ln -s liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
-expect "${compute02_user}@*" {send "ln -s liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
-expect "${compute02_user}@*" {send "ln -s liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
-expect "${compute02_user}@*" {send "ln -s liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
+expect "${compute02_user}@*" {send "ln -s /root/liberty-openrc.sh /usr/local/bin/liberty-openrc\r"}
+expect "${compute02_user}@*" {send "ln -s /root/liberty-pre-compute.sh /usr/local/bin/liberty-pre-compute\r"}
+expect "${compute02_user}@*" {send "ln -s /root/liberty-nova-compute.sh /usr/local/bin/liberty-nova-compute\r"}
+expect "${compute02_user}@*" {send "ln -s /root/liberty-neutron-compute.sh /usr/local/bin/liberty-neutron-compute"}
+expect "${compute02_user}@*" {send "ln -s /root/liberty-cinder-compute.sh /usr/local/bin/liberty-cinder-compute\r"}
 expect "${compute02_user}@*" {send "exit\r"}
 expect eof
 FLAGEOF

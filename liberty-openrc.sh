@@ -45,5 +45,5 @@ export tenant_project_user=demo
 export tenant_project_user_pass=000000
 export tenant_network_name=demo
 export tenant_network_cidr=192.168.10.0/24
-ecport tenant_network_gateway=192.168.10.1
+export tenant_network_gateway=192.168.10.1
 
