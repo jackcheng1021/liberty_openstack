@@ -5,7 +5,7 @@ source /etc/keystone/admin-openrc.sh
 
 echo "run liberty-tenant-create"
 
-if [ $* -eq 0 ]; then
+if [ $# -eq 0 ]; then
   echo "create project ${tenant_project}"
   openstack project show ${tenant_project} &> /dev/null
   if [ $? -eq 0 ]; then
@@ -24,7 +24,7 @@ if [ $* -eq 0 ]; then
     echo "user ${tenant_project_user} exist"
     exit
   fi
-  openstack user create --domain default  --password ${tenant_project_user_pass} ${tenant_project_user} &> /dev/null
+  openstack user create --domain default --password ${tenant_project_user_pass} ${tenant_project_user} &> /dev/null
   if [ $? -ne 0 ]; then
     echo "create user ${tenant_project_user} error";
     exit
@@ -53,7 +53,7 @@ if [ $* -eq 0 ]; then
   export OS_PASSWORD=${tenant_project_user_pass}
   export OS_AUTH_URL=http://controller:5000/v3
   export OS_IDENTITY_API_VERSION=3
-  E0F
+E0F
   if [ %? -ne 0 ]; then
     echo "created ${tenant_project} token error"
     exit
@@ -107,7 +107,7 @@ else
   export OS_PASSWORD=$3
   export OS_AUTH_URL=http://controller:5000/v3
   export OS_IDENTITY_API_VERSION=3
-  E0F
+E0F
   if [ %? -ne 0 ]; then
     echo "created $1 token error"
     exit

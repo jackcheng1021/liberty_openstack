@@ -4,22 +4,25 @@ echo "run liberty-tenant-network-create"
 if [ $# -eq 0 ]; then
   source liberty-openrc
   source /etc/keystone/admin-openrc.sh
+  public_net="wan"
 
-  neutron net-show ${public_network_name} &> /dev/null
-  if [ $? -ne 0 ]; then  #公共网络不存在
+  neutron net-show wan &> /dev/null
+  if [ $? -ne 0 ]; then
+    #公共网络不存在
 
-    echo "create public net: ext-${public_network_name}"
-    neutron net-create --shared --provider:physical_network ${public_network_name} --provider:network_type flat ext-${public_network_name} &> /dev/null
+    echo "create public net: wan"
+    neutron net-create --shared --provider:physical_network ${public_network_name} --provider:network_type flat ${public_net} &> /dev/null
     if [ $? -ne 0 ]; then
-      echo "public net: ext-${public_network_name} created error"
+      echo "public net: ${public_net} created error"
       exit
     fi
 
-    echo "create public subnet: sub${public_network_name}"
+    sub_public_net="sub-${public_net}"
+    echo "create public subnet: ${sub_public_net}"
     ip=$(echo ${public_network_cidr%.*})
-    neutron subnet-create ext-${public_network_name} ${public_network_cidr} --name sub${public_network_name} --allocation-pool start=${ip}.101,end=${ip}.199 --dns-nameserver ${dns_ip} --gateway ${public_network_gateway}
+    neutron subnet-create ${public_net} ${public_network_cidr} --name ${sub_public_net} --allocation-pool start=${ip}.101,end=${ip}.199 --dns-nameserver ${dns_ip} --gateway ${public_network_gateway}
     if [ $? -ne 0 ]; then
-      echo "public subnet: sub${public_network_name} created error"
+      echo "public subnet: ${sub_public_net} created error"
       exit
     fi
     
@@ -36,8 +39,8 @@ if [ $# -eq 0 ]; then
       exit
     fi
 
-    echo "create tenant subnet: sub${tenant_network_name}"
-    neutron subnet-create ${tenant_network_name} ${tenant_network_cidr} --name sub${tenant_network_name} --dns-nameserver ${dns_ip} --gateway ${tenant_network_gateway}
+    echo "create tenant subnet: sub-${tenant_network_name}"
+    neutron subnet-create ${tenant_network_name} ${tenant_network_cidr} --name sub-${tenant_network_name} --dns-nameserver ${dns_ip} --gateway ${tenant_network_gateway}
     if [ $? -ne 0 ]; then
       echo "tenant subnet: sub${tenant_network_name} created error"
       exit
@@ -45,11 +48,11 @@ if [ $# -eq 0 ]; then
         
   fi
 
-  echo "set ext-${public_network_name} external net"
+  echo "set ${public_net} external net"
   source /etc/keystone/admin-openrc.sh
-  neutron net-update ext-${public_network_name} --router:external &> /dev/null
+  neutron net-update ${public_net} --router:external &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "set ${public_network_name} external net error"
+    echo "set ${public_net} external net error"
     exit
   fi
   
@@ -61,17 +64,17 @@ if [ $# -eq 0 ]; then
     exit
   fi
 
-  echo "tenant subnet: sub${tenant_network_name}  connect router: router_${tenant_project}"
-  neutron router-interface-add router_${tenant_project} sub${tenant_network_name} &> /dev/null
+  echo "tenant subnet: sub-${tenant_network_name}  connect router: router_${tenant_project}"
+  neutron router-interface-add router_${tenant_project} sub-${tenant_network_name} &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "tenant subnet: sub${tenant_network_name}  connect router: router_${tenant_project} error"
+    echo "tenant subnet: sub-${tenant_network_name}  connect router: router_${tenant_project} error"
     exit
   fi
   
-  echo "public net: ext-${public_network_name} connect router: router_${tenant_project}"
-  neutron router-gateway-set router_${tenant_project} ext-${public_network_name} &> /dev/null
+  echo "public net: ${public_net} connect router: router_${tenant_project}"
+  neutron router-gateway-set router_${tenant_project} ${public_net} &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "public net: ext-${public_network_name} connect router: router_${tenant_project} error"
+    echo "public net: ${public_net} connect router: router_${tenant_project} error"
     exit
   fi
 
@@ -80,7 +83,7 @@ else
   timestamp=$(echo $[$(date +%s%N)/1000000])
   tenant=$1
   tenant_net=$2
-  tenant_subnet=$(echo "${tenant}_${tenant_net}_${timestamp}")
+  tenant_subnet="${tenant}_${tenant_net}_${timestamp}"
   tenant_net_cidr=$3
   tenant_net_gateway=$4
   
@@ -93,7 +96,7 @@ else
       echo "tenant: ${tenant} not exist, error"
       exit
     fi
-    neutron net-create ${tenant} &> /dev/null
+    neutron net-create ${tenant_net} &> /dev/null
     if [ $? -ne 0 ]; then
       echo "tenant net: ${tenant_net} created error"
       exit
@@ -125,10 +128,9 @@ else
   
   echo "public net: connect router: router_${tenant}"
   source /etc/keystone/admin-openrc.sh
-  extNet=$(neutron net-list | grep "ext-" | awk '{print $4}')
-  neutron router-gateway-set router_${tenant} ${extNet} &> /dev/null
+  neutron router-gateway-set router_${tenant} ${public_net} &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "public net: ${extNet} connect router: router_${tenant} error"
+    echo "public net: ${public_net} connect router: router_${tenant} error"
     exit
   fi  
   
