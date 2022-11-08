@@ -8,16 +8,16 @@ if [ $# -eq 0 ]; then
   neutron net-show ${public_network_name} &> /dev/null
   if [ $? -ne 0 ]; then  #公共网络不存在
 
-    echo "create public net: ${public_network_name}"
-    neutron net-create --shared --provider:physical_network ${public_network_name} --provider:network_type flat ${public_network_name} &> /dev/null
+    echo "create public net: ext-${public_network_name}"
+    neutron net-create --shared --provider:physical_network ${public_network_name} --provider:network_type flat ext-${public_network_name} &> /dev/null
     if [ $? -ne 0 ]; then
-      echo "public net: ${public_network_name} created error"
+      echo "public net: ext-${public_network_name} created error"
       exit
     fi
 
     echo "create public subnet: sub${public_network_name}"
     ip=$(echo ${public_network_cidr%.*})
-    neutron subnet-create ${public_network_name} ${public_network_cidr} --name sub${public_network_name} --allocation-pool start=${ip}.101,end=${ip}.199 --dns-nameserver ${dns_ip} --gateway ${public_network_gateway}
+    neutron subnet-create ext-${public_network_name} ${public_network_cidr} --name sub${public_network_name} --allocation-pool start=${ip}.101,end=${ip}.199 --dns-nameserver ${dns_ip} --gateway ${public_network_gateway}
     if [ $? -ne 0 ]; then
       echo "public subnet: sub${public_network_name} created error"
       exit
@@ -45,9 +45,9 @@ if [ $# -eq 0 ]; then
         
   fi
 
-  echo "set ${public_network_name} external net"
+  echo "set ext-${public_network_name} external net"
   source /etc/keystone/admin-openrc.sh
-  neutron net-update ${public_network_name} --router:external &> /dev/null
+  neutron net-update ext-${public_network_name} --router:external &> /dev/null
   if [ $? -ne 0 ]; then
     echo "set ${public_network_name} external net error"
     exit
@@ -68,21 +68,21 @@ if [ $# -eq 0 ]; then
     exit
   fi
   
-  echo "public net: ${public_network_name} connect router: router_${tenant_project}"
-  neutron router-gateway-set router_${tenant_project} ${public_network_name} &> /dev/null
+  echo "public net: ext-${public_network_name} connect router: router_${tenant_project}"
+  neutron router-gateway-set router_${tenant_project} ext-${public_network_name} &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "public subnet: sub${public_network_name} connect router: router_${tenant_project} error"
+    echo "public net: ext-${public_network_name} connect router: router_${tenant_project} error"
     exit
   fi
 
 else
 
+  timestamp=$(echo $[$(date +%s%N)/1000000])
   tenant=$1
   tenant_net=$2
+  tenant_subnet=$(echo "${tenant}_${tenant_net}_${timestamp}")
   tenant_net_cidr=$3
   tenant_net_gateway=$4
-  timestamp=$(echo $[$(date +%s%N)/1000000])
-  tenant_subnet=$(echo "sub_$2_$tenant_subnet")
   
   neutron net-show ${tenant_net} &> /dev/null
   if [ $? -ne 0 ]; then #租户网络不存在
@@ -95,7 +95,7 @@ else
     fi
     neutron net-create ${tenant} &> /dev/null
     if [ $? -ne 0 ]; then
-      echo "tenant net: ${tenant_network_name} created error"
+      echo "tenant net: ${tenant_net} created error"
       exit
     fi
 
@@ -123,10 +123,12 @@ else
     exit
   fi
   
-  echo "public net: ${public_network_name} connect router: router_${tenant}"
-  neutron router-gateway-set router_${tenant} ${public_network_name} &> /dev/null
+  echo "public net: connect router: router_${tenant}"
+  source /etc/keystone/admin-openrc.sh
+  extNet=$(neutron net-list | grep "ext-" | awk '{print $4}')
+  neutron router-gateway-set router_${tenant} ${extNet} &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "public subnet: sub${public_network_name} connect router: router_${tenant} error"
+    echo "public net: ${extNet} connect router: router_${tenant} error"
     exit
   fi  
   
