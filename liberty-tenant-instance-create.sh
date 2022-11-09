@@ -48,7 +48,7 @@ if [ $# -eq 0 ]; then
   echo "instance list"
   nova list
 
-elif [ $# -eq 1 ]; then #默认租户创建新实例  $1 instanceName
+elif [ $# -eq 2 ]; then #默认租户创建新实例  $1 instanceName 用途 $2 usage dev:开发 test:测试
 
   echo "default tenant create custom instance"
   source /etc/keystone/demo-openrc.sh
@@ -88,10 +88,20 @@ elif [ $# -eq 1 ]; then #默认租户创建新实例  $1 instanceName
   echo "instance list"
   nova list
 
-elif [ $# -eq 2 ]; then
+  if [ "$2" == "dev" ]; then
+    #instance use for dev
+    liberty-tenant-instance-dev ${floatingIp} 000000 $1-${instanceId}
+  elif [ "$2" == "test" ]; then
+    #instance use for test
+    liberty-tenant-instance-test ${floatingIp} 000000 $1-${instanceId}
+  fi
+
+
+elif [ $# -eq 3 ]; then
 
   tenant=$1 #租户名
   instanceName=$2 #实例名
+  usage=$3 #用途 dev:开发 test:测试
   echo "custom tenant: ${tenant} create custom instance: ${instanceName}"
   source /etc/keystone/${tenant}-openrc.sh || (echo "tenant: ${tenant} not exist, error"; exit)
   echo "upload image"
@@ -128,6 +138,14 @@ elif [ $# -eq 2 ]; then
 
   echo "instance list"
   nova list
+
+  if [ "$usage" == "dev" ]; then
+    #instance use for dev
+    liberty-tenant-instance-dev ${floatingIp} 000000 $1-${instanceId}
+  elif [ "$usage" == "test" ]; then
+    #instance use for test
+    liberty-tenant-instance-test ${floatingIp} 000000 $1-${instanceId}
+  fi
 
 else
   echo "script parameters error"
