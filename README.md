@@ -55,14 +55,29 @@ reboot
 
 ## 4. The visualization system for remote installation will be updated later
 
-## 5. Update Process
+## 5. important submit
+
+All the scripts in this project are divided into two parts：
+- some scripts for ops
+- some scripts for development，one key generate a cloud host with a development environment, eg: java-1.8, python-3.6, docker, mysql-5.7, tomcat-8.0, redis
+  - liberty-tenant-create.sh
+  - liberty-tenant-imge-create.sh
+  - liberty-tenant-instance-create.sh
+  - liberty-tenant-instance-dev.sh
+  - liberty-tenant-network-create.sh
+
+## 6. Update Process
 - 2022.11.06
   - repair: some bugs
   - submit: "on key install system"
 - 2022.11.07
-  - submit: tenant-create script
-  - submit: tenant-network-create script
-  - submit: two scripts add  "one key install system"
+  - new add: tenant-create script
+  - new add: tenant-network-create script
+  - update: two scripts add  "one key install system"
 - 2022.11.08
-  - submit: tenant-instance-create script，support use  default or custom create tenant-instance
-  - submit: repair liberty-setup script, liberty-tenant-instance-create add liberty-setup script
+  - update: tenant-instance-create script，support use  default or custom create tenant-instance
+  - update: repair liberty-setup script, liberty-tenant-instance-create add liberty-setup script
+- 2022.11.09
+  - new add: liberty-tenant-instance-dev script, one key generate server use for development
+  - new add: liberty-tenant-image-create script, one key upload image to glance
+  - update: liberty-tenant-instance-create script, user one key generate server with development environment
