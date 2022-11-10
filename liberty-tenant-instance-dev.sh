@@ -11,7 +11,7 @@ set timeout 600
 spawn ssh root@$ip
 expect {
         "(yes/no)" {send "yes\r"; exp_continue}
-        "password:" {send "$pass\r"}
+        "password:" {send "000000\r"}
 }
 expect "${instanceName}@*" {send "curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null \r"}
 expect "${instanceName}@*" {send "sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo \r"}
