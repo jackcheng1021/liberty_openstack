@@ -81,3 +81,11 @@ All the scripts in this project are divided into two parts：
   - new add: liberty-tenant-instance-dev script, one key generate server use for development
   - new add: liberty-tenant-image-create script, one key upload image to glance
   - update: liberty-tenant-instance-create script, user one key generate server with development environment
+- 2022.11.10
+  - new add: liberty-tenant-instance-deploy-java-package script, one key deploy java project in instance
+  - new add: liberty-tenant-instance-deploy-python-package script, one key deploy python project in instance
+  - new add: liberty-tenant-instance-deploy-tomcat-package script, one key deploy web project in instance
+  - update: liberty-tenant-instance-create script, repair some parameters bug
+  - update: liberty-tenant-instance-dev script, repair some parameters bug
+  - update: liberty-tenant-instance-install-app script, repair some parameters bug
+  
