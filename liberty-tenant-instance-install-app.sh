@@ -16,8 +16,8 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "000000\r"}
 }
-expect "${instanceName}@*" {send "yum -y install ${app} &> /dev/null \r"}
-expect "${instanceName}@*" {send "exit\r"}
+expect "root@*" {send "yum -y install ${app} &> /dev/null \r"}
+expect "root@*" {send "exit\r"}
 expect eof
 FLAGEOF
 
