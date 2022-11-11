@@ -15,7 +15,8 @@ fi
 
 echo "config parameter"
 sed -i 's#^OPENSTACK_HOST = .*#OPENSTACK_HOST = \"controller\"#g' /etc/openstack-dashboard/local_settings
-sed -i 's#^ALLOWED_HOSTS = .*#ALLOWED_HOSTS = ['*', ]#g' /etc/openstack-dashboard/local_settings
+sed -i "s#^ALLOWED_HOSTS = .*#ALLOWED_HOSTS = [\'*\', ]#g" /etc/openstack-dashboard/local_settings
+sed -i "s#locmem\.LocMemCache#memcached.MemcachedCache#g" /etc/openstack-dashboard/local_settings
 sed -i "118i \'LOCATION\': \'controller:11211\'\," /etc/openstack-dashboard/local_settings
 sed -i 's#^OPENSTACK_KEYSTONE_DEFAULT_ROLE = .*#OPENSTACK_KEYSTONE_DEFAULT_ROLE = \"user\"#g' /etc/openstack-dashboard/local_settings
 sed 's#^\#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = .*#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True#g' /etc/openstack-dashboard/local_settings
@@ -38,6 +39,7 @@ sed -i "s#'enable_lb': .*#'enable_lb': False,#g" /etc/openstack-dashboard/local_
 sed -i "s#'enable_firewall': .*#'enable_firewall': False,#g" /etc/openstack-dashboard/local_settings
 sed -i "s#'enable_vpn': .*#'enable_vpn': False,#g" /etc/openstack-dashboard/local_settings
 sed -i "s#'enable_fip_topology_check': .*#'enable_fip_topology_check': False,#g" /etc/openstack-dashboard/local_settings
+sed -i "1i WSGIApplicationGroup %{GLOBAL}" /etc/httpd/conf.d/openstack-dashboard.conf
 
 echo "boot service"
 systemctl restart httpd
