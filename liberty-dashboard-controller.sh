@@ -19,7 +19,7 @@ sed -i "s#^ALLOWED_HOSTS = .*#ALLOWED_HOSTS = [\'*\', ]#g" /etc/openstack-dashbo
 sed -i "s#locmem\.LocMemCache#memcached.MemcachedCache#g" /etc/openstack-dashboard/local_settings
 sed -i "118i \'LOCATION\': \'controller:11211\'\," /etc/openstack-dashboard/local_settings
 sed -i 's#^OPENSTACK_KEYSTONE_DEFAULT_ROLE = .*#OPENSTACK_KEYSTONE_DEFAULT_ROLE = \"user\"#g' /etc/openstack-dashboard/local_settings
-sed 's#^\#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = .*#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True#g' /etc/openstack-dashboard/local_settings
+sed -i 's#^\#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = .*#OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True#g' /etc/openstack-dashboard/local_settings
 index=$(cat -n /etc/openstack-dashboard/local_settings | grep "#OPENSTACK_API_VERSIONS = .*" | xargs | awk '{print $1}')
 sed -i "${index}i OPENSTACK_API_VERSIONS = \{ " /etc/openstack-dashboard/local_settings
 let index=index+1
