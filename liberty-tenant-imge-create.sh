@@ -1,18 +1,29 @@
 #!/usr/bin/env bash
 
+
 source /etc/keystone/admin-openrc.sh
 
-echo "run liberty-tenant-image-create"
-
 imageName=$1
-imagePath=$2
+imageUrl=$2
+imagePath=/opt/image/${imageName}
 imageFormat=$3
 containerFormat=$4
 
-glance image-create --name "${imageName}" --file $imagePath --disk-format $imageFormat  --container-format $containerFormat --visibility public &> /dev/null
+{
+curl -o $imagePath $imageUrl &> /dev/null
+}&
+wait
 if [ $? -ne 0 ]; then
-  echo "glance: image ${imageName} created error"
+  echo "{\"result\":\"0\",\"msg\":\"image download error\"}"
   exit
 fi
 
-echo "run liberty-tenant-image-create finish"
+
+glance image-create --name "${imageName}" --file $imagePath --disk-format $imageFormat  --container-format $containerFormat --visibility public &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "{\"result\":\"-1\",\"msg\":\"image created error\"}"
+  exit
+fi
+
+echo "{\"result\":\"10\",\"msg\":\"image created success\"}"
+

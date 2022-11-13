@@ -1,24 +1,37 @@
 #!/usr/bin/env bash
 
-echo "run liberty-tenant-instance-install-app"
-
 ip=$1
 tenant=$2
-instanceName=$3
+instancePass=$3
 app=$4 #要安装的软件
 
-sourc /etc/keystone/$tenant-openrc.sh
+sourc /etc/keystone/$tenant-openrc.sh &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "{\"result\":\"-1\",\"msg\":\"tenant not exist\"}"
+  exit
+fi
+
+nova list | grep "ACTIVE" | grep "${ip}" &> /dev/null
+if [ $? -ne 0 ]; then
+  echo "{{\"result\":\"0\",\"msg\":\"no host ip=${ip}\"}}"
+  exit
+fi
 
 /usr/bin/expect << FLAGEOF
 set timeout 600
 spawn ssh root@$ip
 expect {
         "(yes/no)" {send "yes\r"; exp_continue}
-        "password:" {send "000000\r"}
+        "password:" {send "${instancePass}\r"}
 }
 expect "root@*" {send "yum -y install ${app} &> /dev/null \r"}
-expect "root@*" {send "exit\r"}
+expect "root@*" {send "exit \r"}
 expect eof
 FLAGEOF
 
-echo "run liberty-tenant-instance-install-app finish"
+if [ $? -ne 0 ]; then
+  echo "{\"result\":\"1\",\"msg\":\"app install error\"}" #安装软件报错
+  exit
+fi
+
+echo "{\"result\":\"10\",\"msg\":\"app install success\"}"

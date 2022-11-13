@@ -1,9 +1,7 @@
 #!/bin/bash
 
-echo "run liberty-tenant-instance-create"
-
 if [ $# -eq 0 ]; then
-
+  echo "run liberty-tenant-instance-create"
   echo "default tenant create server"
   source liberty-openrc
   source /etc/keystone/demo-openrc.sh
@@ -47,109 +45,60 @@ if [ $# -eq 0 ]; then
   
   echo "instance list"
   nova list
-
-elif [ $# -eq 2 ]; then #默认租户创建新实例  $1 instanceName 用途 $2 usage dev:开发 test:测试
-
-  echo "default tenant create custom instance"
-  source /etc/keystone/demo-openrc.sh
-  
-  echo "upload image"
-  {
-    nova image-list | grep "centos7" &> /dev/null
-  }&
-  wait
-  if [ $? -ne 0 ]; then
-    echo "centos7 image not exist, error"
-    exit
-  fi
-  
-  netId=$(neutron net-list | grep "${OS_TENANT_NAME}" | awk '{print $2}')
- 
-  echo "boot instance"
-  {
-    instanceId=${RANDOM}
-    nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default $1-${instanceId} &> /dev/null
-  }&
-  wait
-  if [ $? -ne 0 ]; then
-    echo "instance boot error"
-  fi
-
-  echo "bind floating ip"
-  {
-    floatingIp=$(neutron floatingip-create wan | grep "floating_ip_address" | awk '{print $4}')
-    nova floating-ip-associate  ${floatingIp}
-  }&
-  wait
-  if [ $? -ne 0 ]; then
-    echo "bind floating ip error"
-  fi
-  
-  echo "instance list"
-  nova list
-
-  if [ "$2" == "dev" ]; then
-    #instance use for dev
-    liberty-tenant-instance-dev ${floatingIp} 000000 $1-${instanceId}
-  elif [ "$2" == "test" ]; then
-    #instance use for test
-    liberty-tenant-instance-test ${floatingIp} 000000 $1-${instanceId}
-  fi
-
+  echo "run liberty-tenant-instance-create finish"
 
 elif [ $# -eq 3 ]; then
 
   tenant=$1 #租户名
   instanceName=$2 #实例名
-  usage=$3 #用途 dev:开发 test:测试
-  echo "custom tenant: ${tenant} create custom instance: ${instanceName}"
-  source /etc/keystone/${tenant}-openrc.sh || (echo "tenant: ${tenant} not exist, error"; exit)
-  echo "upload image"
+  instanceType=$3 #云主机类型, 1:small 2: medium 3: large
+
+  source /etc/keystone/${tenant}-openrc.sh || (echo "{\"result\":\"-1\",\"msg\":\"tenant not exist\"}"; exit) # -1: 没有该租户
   {
     nova image-list | grep "centos7" &> /dev/null
   }&
   wait
   if [ $? -ne 0 ]; then
-    echo "centos7 image not exist, error"
+    #0: 没有镜像
+    echo "{\"result\":\"0\",\"msg\":\"no centos7 image\"}"
     exit
   fi
 
   netId=$(neutron net-list | grep "${OS_TENANT_NAME}" | awk '{print $2}')
 
-  echo "boot instance"
   {
-    instanceId=${RANDOM}
-    nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default ${instanceName}-${instanceId} &> /dev/null
+    if [ ${instanceType} -eq 1 ]; then
+      nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default ${instanceName} &> /dev/null
+    elif [ ${instanceType} -eq 2 ]; then
+      nova boot --flavor m1.medium --image centos7 --nic net-id=${netId} --security-group default ${instanceName} &> /dev/null
+    elif [ ${instanceType} -eq 3 ]; then
+      nova boot --flavor m1.large --image centos7 --nic net-id=${netId} --security-group default ${instanceName} &> /dev/null
+    else
+      #1: 参数不对
+      echo "{\"result\":\"1\",\"msg\":\"parameter error\"}"
+      exit
+    fi
   }&
   wait
   if [ $? -ne 0 ]; then
-    echo "instance boot error"
+    #2: 启动云主机出错
+    echo "{\"result\":\"2\",\"msg\":\"boot error\"}"
   fi
 
-  echo "bind floating ip"
   {
     floatingIp=$(neutron floatingip-create wan | grep "floating_ip_address" | awk '{print $4}')
     nova floating-ip-associate  ${floatingIp}
   }&
   wait
   if [ $? -ne 0 ]; then
-    echo "bind floating ip error"
+    #3: 绑定浮动ip出错
+    echo "{\"result\":\"3\",\"msg\":\"floatingIp error\"}"
+    exit
   fi
 
-  echo "instance list"
-  nova list
-
-  if [ "$usage" == "dev" ]; then
-    #instance use for dev
-    liberty-tenant-instance-dev ${floatingIp} 000000 $1-${instanceId}
-  elif [ "$usage" == "test" ]; then
-    #instance use for test
-    liberty-tenant-instance-test ${floatingIp} 000000 $1-${instanceId}
-  fi
+  echo "{\"result\":\"10\",\"msg\":\"{\"hostIp\":\"${floatingIp}\",\"hostRoot\":\"root\",\"hostPass\":\"000000\"}\"}"
 
 else
-  echo "script parameters error"
+  echo "4:parameter count error" #参数数量有误
   exit
 fi
-
-echo "run liberty-tenant-instance-create finish"

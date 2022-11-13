@@ -21,6 +21,7 @@ menu() {
 
 while [ 1 -eq 1 ]
 do
+  menu
   read -p "pleae input key: " key
   if [ $key -eq 10 ]; then
     echo "welcome to use again，bye"
