@@ -88,4 +88,8 @@ All the scripts in this project are divided into two parts：
   - update: liberty-tenant-instance-create script, repair some parameters bug
   - update: liberty-tenant-instance-dev script, repair some parameters bug
   - update: liberty-tenant-instance-install-app script, repair some parameters bug
+- 2022.11.13
+  - new add: liberty-tenant-instance-git, one key deploy git env in cloud host
+  - new add: liberty-tenant-instance-git-repo, one key deploy git repo in cloud host
+  - update: liberty-tenant-*.sh, repair json string form
   
