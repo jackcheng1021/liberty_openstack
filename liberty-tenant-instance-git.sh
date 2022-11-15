@@ -25,13 +25,15 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "${pass}\r"}
 }
+expect "root@*" {send "rpm -q java-1.8.0-openjdk &> /dev/null || yum -y install java-1.8.0-openjdk &> /dev/null \r"}
+expect "root@*" {send "rpm -q maven &> /dev/null || yum -y install maven &> /dev/null \r"}
+expect "root@*" {send "rpm -q vsftpd &> /dev/null || yum -y install vsftpd &> /dev/null \r"}
+expect "root@*" {send "chmod -R 777 /opt/ \r"}
+expect "root@*" {send "echo "anon_root=/opt/" >> /etc/vsftpd/vsftpd.conf \r"}
+expect "root@*" {send "systemctl restart vsftpd && systemctl enable vsftpd \r"}
 expect "root@*" {send "rpm -q git &> /dev/null || (yum -y install git &> /dev/null) \r"}
 export "root@*" {send "useradd ${gitUser} \r"}
 export "root@*" {send "echo "${gitPass}" | passwd --stdin ${gitUser} \r"}
-#export "root@*" {send "echo "su - ${gitUser} \r"}
-#expect "${gitUser}@*" {send "[ -d ${gitRepo} ] && rm -rf ${gitRepo} \r"}
-#expect "${gitUser}@*" {send "mkdir ${gitRepo}; cd ${gitRepo} \r"}
-#expect "${gitUser}@*" {send "git init --bare &> /dev/null \r"}
 expect "root@*" {send "exit &> /dev/null \r"}
 expect eof
 FLAGEOF

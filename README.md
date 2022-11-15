@@ -92,4 +92,7 @@ All the scripts in this project are divided into two parts：
   - new add: liberty-tenant-instance-git, one key deploy git env in cloud host
   - new add: liberty-tenant-instance-git-repo, one key deploy git repo in cloud host
   - update: liberty-tenant-*.sh, repair json string form
+  2022.11.16
+  - new add: liberty-tenant-instance-git-repo-package-java.sh, packaging project by maven and upload to ftp
+  - update: repair liberty-tenant-instance-dev.sh git.sh git.repo.sh, repair some problems
   

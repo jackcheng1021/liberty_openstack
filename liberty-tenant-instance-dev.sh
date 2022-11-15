@@ -40,9 +40,12 @@ expect "root@*" {send "systemctl enable docker-ce &> /dev/null \r"}
 expect "root@*" {send "docker pull mysql:5.7 &> /dev/null \r"}
 expect "root@*" {send "docker pull redis:latest &> /dev/null \r"}
 expect "root@*" {send "docker pull tomcat:8" &> /dev/null \r"}
-expect "root@*" {send "docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Welcome_1 -d mysql:5.7 &> /dev/null \r"}
-expect "root@*" {send "docker run --name redis -p 6379:6379 -d redis:latest &> /dev/null \r"}
-expect "root@*" {send "docker run --name tomcat -p 8080:8080 -d tomcat:8 &> /dev/null \r"}
+expect "root@*" {send "docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=Welcome_1 -d mysql:5.7 &> /dev/null \r"}
+expect "root@*" {send "docker run --name redis --network host -d redis:latest &> /dev/null \r"}
+expect "root@*" {send "docker run --name tomcat --network host -d tomcat:8 &> /dev/null \r"}
+expect "root@*" {send "docker exec -it tomcat /bin/bash \r"}
+expect "root@*" {send "cp -r webapps.dist/* webapps/ \r"}
+expect "root@*" {send "exit\r"}
 expect "root@*" {send "exit\r"}
 expect eof
 FLAGEOF

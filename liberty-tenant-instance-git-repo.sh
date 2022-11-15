@@ -25,8 +25,8 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "${gitPass}\r"}
 }
-expect "${gitUser}@*" {send "[ -d ${gitRepo} ] && rm -rf ${gitRepo} \r"}
-expect "${gitUser}@*" {send "mkdir ${gitRepo}; cd ${gitRepo} \r"}
+expect "${gitUser}@*" {send "[ -d ${gitRepo}.git ] && rm -rf ${gitRepo}.git \r"}
+expect "${gitUser}@*" {send "mkdir ${gitRepo}.git; cd ${gitRepo}.git \r"}
 expect "${gitUser}@*" {send "git init --bare &> /dev/null \r"}
 expect "${gitUser}@*" {send "exit &> /dev/null \r"}
 expect eof
