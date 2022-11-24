@@ -1,0 +1,43 @@
+#部署NodePort服务的模板文件
+#用于部署外部可访问的服务
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: <namespace:name>default</namespace:name>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <deployment:name>deploy-nginx</deployment:name>
+  namespace: <namespace:name>default</namespace:name>
+spec:
+  replicas: <deployment:pod:replicas>2</deployment:pod:replicas> #启用两个Pod副本
+  selector: #启用标签选择
+    matchLabels: #启用匹配标签
+      app: <deployment:pod:label>nginx</deployment:pod:label>
+  template:
+    metadata:
+      labels: #设置该Deployment中的Pod标签
+        app: <deployment:pod:label></deployment:pod:label>
+    spec:
+      containers:
+        - name: <deployment:pod:name>nginx</deployment:pod:name>
+          image: <deployment:pod:image>nginx:1.15-alpine</deployment:pod:image>
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: <deployment:pod:containerport>80</deployment:pod:containerport>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: <service:name>service-nginx</service:name>
+  namespace: <namespace:name>default</namespace:name>
+spec:
+  type: NodePort
+  ports:
+    - port: <deployment:pod:containerport>80</deployment:pod:containerport>  #service ip访问端口
+      protocol: TCP
+      targetPort: <deployment:pod:containerport>80</deployment:pod:containerport> #pod的端口
+  selecotr: #启用标签过滤
+    app: <deployment:pod:label>nginx</deployment:pod:label> #将标签名为APP，值为nginx的Pod都过滤出来

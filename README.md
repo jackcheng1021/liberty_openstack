@@ -95,4 +95,15 @@ All the scripts in this project are divided into two parts：
   2022.11.16
   - new add: liberty-tenant-instance-git-repo-package-java.sh, packaging project by maven and upload to ftp
   - update: repair liberty-tenant-instance-dev.sh git.sh git.repo.sh, repair some problems
+  2022.11.24
+  - new add: liberty-tenant-instance-delete
+  - new add: k8s-install-master, one key delpoy k8s platform in some instances
+  - new add: k8s-service-model-external.yml
+  - new add: k8s-service-model-internal.yml
+  - update: liberty-tenant-instance-create
+  - update: liberty-tenant-instance-dev.sh
+  - update: liberty-tenant-instance-git.sh
+  - update: liberty-tenant-instance-git-repo.sh
+  - update: liberty-tenant-instance-git-repo-package-java.sh
+  
   

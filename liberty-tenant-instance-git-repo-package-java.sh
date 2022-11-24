@@ -1,11 +1,12 @@
 #!/bin/bash
 
-ip=$1
-gitUser=$2
-gitPass=$3
-gitRepo=$4
-gitRepoVersion=$5
-packageName=$6
+ip=$1  #git git-repo  git-repo-package 都在同一台云主机上
+tenant=$2
+gitUser=$3
+gitPass=$4
+gitRepo=$5 #gitRepo=my_project
+gitRepoVersion=$6 #当前即将打包的版本号，开发人员传入 假设 gitRepoVersion=0.1
+packageName=$7 #要打包的包名，开发人员传入 packageName=demo
 
 source /etc/keystone/${tenant}-openrc.sh &> /dev/null
 if [ $? -ne 0 ]; then
@@ -26,14 +27,14 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "${gitPass}\r"}
 }
-expect "${gitUser}@*" {send "[ -d  ${gitRepo}-${gitRepoVersion} ] && rm -rf ${gitRepo}-${gitRepoVersion} \r"}
+expect "${gitUser}@*" {send "[ -d ${gitRepo}-${gitRepoVersion} ] && rm -rf ${gitRepo}-${gitRepoVersion} \r"}
 expect "${gitUser}@*" {send "mkdir -p ${gitRepo}-${gitRepoVersion} \r"}
 expect "${gitUser}@*" {send "cd ${gitRepo}-${gitRepoVersion} \r"}
 expect "${gitUser}@*" {send "git clone git@localhost:/${gitUser}/${gitRepo}.git \r"}
 expect "${gitUser}@*" {send "cd ${gitRepo}-${gitRepoVersion}/${gitRepo}/ \r"}
 expect "${gitUser}@*" {send "mvn clean install -Dmaven.test.skip=true &> /dev/null \r"}
 expect "${gitUser}@*" {send "cd target/ \r"}
-expect "${gitUser}@*" {send "mv ${gitRepo}-${gitRepoVersion}.jar /opt/${packageName}-${gitRepoVersion}.jar \r"}
+expect "${gitUser}@*" {send "mv ${gitRepo}-*.jar /opt/${packageName}-${gitRepoVersion}.jar \r"}
 expect "${gitUser}@*" {send "exit &> /dev/null \r"}
 expect eof
 FLAGEOF
@@ -43,4 +44,4 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
-echo echo "{\"result\":\"10\",\"msg\":{\"packageUrl\":\"ftp://${ip}/${packageName}-${gitRepoVersion}.jar \"}}"
+echo "{\"result\":\"10\",\"msg\":{\"packageUrl\":\"ftp://${ip}/${packageName}-${gitRepoVersion}.jar \"}}"

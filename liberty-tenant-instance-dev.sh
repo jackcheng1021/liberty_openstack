@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 ip=$1
 pass=$2
 tenant=$3
@@ -24,25 +23,26 @@ expect {
         "(yes/no)" {send "yes\r"; exp_continue}
         "password:" {send "${pass}\r"}
 }
-expect "root@*" {send "curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null \r"}
-expect "root@*" {send "sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo \r"}
-expect "root@*" {send "curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo &> /dev/null \r"}
-expect "root@*" {send "curl -o /etc/yum.repos.d/docker-ce.repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo &> /dev/null \r"}
-expect "root@*" {send "yum makecache &> /dev/null \r"}
-expect "root@*" {send "yum -y install docker-ce &> /dev/null \r"}
+expect "root@*" {send "rpm -q iptables-services || (yum -y install iptables-services; systemctl restart iptables; systemctl enable iptables) \r"}
+expect "root@*" {send "iptables -F && iptables -F -t nat && iptables -F -t mangle && iptables -F -t raw; service iptables save &> /dev/null \r"}
+expect "root@*" {send "yum -y install docker-ce-19.03.1 &> /dev/null \r"}
 expect "root@*" {send "yum -y install java-1.8.0-openjdk &> /dev/null \r"}
 expect "root@*" {send "yum -y install python3 &> /dev/null \r"}
 expect "root@*" {send "mkdir -p /etc/docker \r"}
-expect "root@*" {send "echo '{\"registry-mirrors\": [\"https://idoamkgf.mirror.aliyuncs.com\"]}' > /etc/docker/daemon.json \r"}
+expect "root@*" {send "[ -f /etc/docker/daemon.json ] && rm -f /etc/docker/daemon.json \r"}
+expect "root@*" {send "echo \"{\" >> /etc/docker/daemon.json  \r"}
+expect "root@*" {send "echo '\"registry-mirrors\": [\"https://idoamkgf.mirror.aliyuncs.com\"],' >> /etc/docker/daemon.json \r"}
+expect "root@*" {send "echo '\"exec-opts\": [\"native.cgroupdriver=systemd\"]' >> /etc/docker/daemon.json \r"}
+expect "root@*" {send "echo \"}\" >> /etc/docker/daemon.json \r"}
 expect "root@*" {send "systemctl daemon-reload \r"}
-expect "root@*" {send "systemctl restart docker-ce \r"}
-expect "root@*" {send "systemctl enable docker-ce &> /dev/null \r"}
-expect "root@*" {send "docker pull mysql:5.7 &> /dev/null \r"}
-expect "root@*" {send "docker pull redis:latest &> /dev/null \r"}
-expect "root@*" {send "docker pull tomcat:8" &> /dev/null \r"}
-expect "root@*" {send "docker run --name mysql --network host -e MYSQL_ROOT_PASSWORD=Welcome_1 -d mysql:5.7 &> /dev/null \r"}
-expect "root@*" {send "docker run --name redis --network host -d redis:latest &> /dev/null \r"}
-expect "root@*" {send "docker run --name tomcat --network host -d tomcat:8 &> /dev/null \r"}
+expect "root@*" {send "systemctl restart docker \r"}
+expect "root@*" {send "systemctl enable docker &> /dev/null \r"}
+expect "root@*" {send "docker images | grep \"mysql:5.7\" || docker pull mysql:5.7 &> /dev/null \r"}
+expect "root@*" {send "docker images | grep \"redis\" || docker pull redis:latest &> /dev/null \r"}
+expect "root@*" {send "docker images | grep \"tomcat:8\" || docker pull tomcat:8" &> /dev/null \r"}
+expect "root@*" {send "docker ps | grep \"mysql\" || docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=Welcome_1 -d mysql:5.7 &> /dev/null \r"}
+expect "root@*" {send "docker ps | grep \"redis\" || docker run --name redis -p 6379:6379 -d redis:latest &> /dev/null \r"}
+expect "root@*" {send "docker ps | grep \"tomcat\" || docker run --name tomcat -p 8080:8080 -d tomcat:8 &> /dev/null \r"}
 expect "root@*" {send "docker exec -it tomcat /bin/bash \r"}
 expect "root@*" {send "cp -r webapps.dist/* webapps/ \r"}
 expect "root@*" {send "exit\r"}

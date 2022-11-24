@@ -7,13 +7,10 @@ if [ $# -eq 0 ]; then
   source /etc/keystone/demo-openrc.sh
   
   echo "upload image"
-  {
-    nova image-list | grep "centos7" &> /dev/null
-  }&
-  wait
+  nova image-list | grep "centos7" &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "centos7 image not exist, error"
-    exit
+    echo "1: centos7 image not exist, error"
+    exit 1
   fi
   
   echo "init secgroup"
@@ -25,12 +22,10 @@ if [ $# -eq 0 ]; then
   nova secgroup-add-rule default udp 1 65535 0.0.0.0/0
  
   echo "boot instance"
-  {
-    nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default ${tenant_project}-instance-01 &> /dev/null
-  }&
-  wait
+  nova boot --flavor m1.small --image centos7 --nic net-id=${netId} --security-group default ${tenant_project}-instance-01 &> /dev/null
   if [ $? -ne 0 ]; then
-    echo "instance boot error"
+    echo "2: instance boot error"
+    exit 2
   fi
 
   echo "bind floating ip"
@@ -40,11 +35,40 @@ if [ $# -eq 0 ]; then
   }&
   
   if [ $? -ne 0 ]; then
-    echo "bind floating ip error"
+    echo "3: bind floating ip error"
+    exit 3
   fi
-  
-  echo "instance list"
-  nova list
+
+  echo "config yum in instance"
+  content=$(nova list | grep "| ACTIVE |" | grep "${tenant_project}-instance-01")
+  if [ $? -eq 0 ]; then
+    ip=$(echo "${content}" | awk -F ',' '{print $2}' | xargs | awk '{print $1}')
+    /usr/bin/expect <<FLAGEOF
+set timeout 600
+spawn ssh root@$ip
+expect {
+        "(yes/no)" {send "yes\r"; exp_continue}
+        "password:" {send "000000\r"}
+}
+expect "root@*" {send "sed -i "s#^nameserver .*#nameserver ${public_network_gateway}#g" cat /etc/resolv.conf \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null \r"}
+expect "root@*" {send "sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo &> /dev/null \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/docker-ce.repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo &> /dev/null \r"}
+expect "root@*" {send "yum makecache &> /dev/null \r"}
+expect "root@*" {send "yum -y install iptables-services &> /dev/null \r"}
+expect "root@*" {send "systemctl restart iptables \r"}
+expect "root@*" {send "systemctl enable iptables \r"}
+expect "root@*" {send "iptables -F && iptables -F -t nat && iptables -F -t mangle && iptables -F -t raw \r"}
+expect "root@*" {send "services iptables save &> /dev/null \r"}
+expect "root@*" {send "exit \r"}
+expect eof
+FLAGEOF
+  fi
+  if [ $? -ne 0 ]; then
+    echo "4: config yum error"
+    exit 4
+  fi
   echo "run liberty-tenant-instance-create finish"
 
 elif [ $# -eq 3 ]; then
@@ -96,7 +120,38 @@ elif [ $# -eq 3 ]; then
     exit
   fi
 
-  echo "{\"result\":\"10\",\"msg\":\"{\"hostIp\":\"${floatingIp}\",\"hostRoot\":\"root\",\"hostPass\":\"000000\"}\"}"
+  content=$(nova list | grep "| ACTIVE |" | grep "${instanceName}")
+  ip=""
+  if [ $? -eq 0 ]; then
+    ip=$(echo "${content}" | awk -F ',' '{print $2}' | xargs | awk '{print $1}')
+    /usr/bin/expect <<FLAGEOF
+set timeout 600
+spawn ssh root@$ip
+expect {
+        "(yes/no)" {send "yes\r"; exp_continue}
+        "password:" {send "000000\r"}
+}
+expect "root@*" {send "sed -i "s#^nameserver .*#nameserver ${public_network_gateway}#g" cat /etc/resolv.conf \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo &> /dev/null \r"}
+expect "root@*" {send "sed -i -e '/mirrors.cloud.aliyuncs.com/d' -e '/mirrors.aliyuncs.com/d' /etc/yum.repos.d/CentOS-Base.repo \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo &> /dev/null \r"}
+expect "root@*" {send "curl -o /etc/yum.repos.d/docker-ce.repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo &> /dev/null \r"}
+expect "root@*" {send "yum makecache &> /dev/null \r"}
+expect "root@*" {send "yum -y install iptables-services &> /dev/null \r"}
+expect "root@*" {send "systemctl restart iptables \r"}
+expect "root@*" {send "systemctl enable iptables \r"}
+expect "root@*" {send "iptables -F && iptables -F -t nat && iptables -F -t mangle && iptables -F -t raw \r"}
+expect "root@*" {send "services iptables save &> /dev/null \r"}
+expect "root@*" {send "exit \r"}
+expect eof
+FLAGEOF
+  fi
+  if [ $? -ne 0 ]; then
+    echo "echo {\"result\":\"4\",\"msg\": \"config yum error\"}"
+    exit
+  fi
+
+  echo "{\"result\":\"10\",\"msg\":\"{\"hostIp\":\"${ip}\",\"hostRoot\":\"root\",\"hostPass\":\"000000\"}\"}"
 
 else
   echo "4:parameter count error" #参数数量有误

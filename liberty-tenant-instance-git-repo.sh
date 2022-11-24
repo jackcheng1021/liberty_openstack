@@ -37,4 +37,4 @@ if [ $? -ne 0 ]; then
   exit
 fi
 
-echo echo "{\"result\":\"10\",\"msg\":\"deploy git repo success\"}"
+echo "{\"result\":\"10\",\"msg\":\"deploy git repo success\"}"
